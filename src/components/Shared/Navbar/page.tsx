@@ -2,7 +2,8 @@
 const Navbar = () => {
     return (
         <div>
-            nabar
+<button className="btn btn-success">Success</button>
+
         </div>
     );
 };
