@@ -66,5 +66,7 @@ body {
 .btn-active {
   background-color: var(--btn-active); /* active button background */
   color: var(--btn-text);             /* active text color */
-  border: 1px solid var(--border);        /* border color */
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;        /* border color */
 }
