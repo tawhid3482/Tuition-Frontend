@@ -1,0 +1,8 @@
+:root {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+
+  --color-base-100: var(--background, #ffffff);
+  --color-base-content: var(--text);
+}
