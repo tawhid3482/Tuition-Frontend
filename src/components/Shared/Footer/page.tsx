@@ -13,11 +13,11 @@ const Footer = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="relative w-16 h-16 overflow-hidden rounded-full bg-white/10 p-2">
-                  <Image 
-                    src={Logo} 
-                    alt="TR Tuition Logo" 
-                    width={64} 
-                    height={64} 
+                  <Image
+                    src={Logo}
+                    alt="TR Tuition Logo"
+                    width={64}
+                    height={64}
                     className="object-contain"
                   />
                 </div>
@@ -29,7 +29,7 @@ const Footer = () => {
               <p className="text-sm leading-relaxed text-secondary/80">
                 Connecting students with expert tutors for personalized learning experiences since 2015.
               </p>
-              
+
               {/* Social Media Links */}
               <div className="flex space-x-4 pt-2">
                 <a href="#" className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all duration-300 hover:scale-110">
@@ -49,7 +49,7 @@ const Footer = () => {
 
             {/* Services Section */}
             <nav className="space-y-4">
-              <h6 className="footer-title text-xl font-semibold text-accent border-l-4 border-accent pl-3">Services</h6>
+              <h6 className="footer-title text-xl font-semibold text-secondary border-l-4 border-accent pl-3">Services</h6>
               <div className="space-y-3">
                 <a href="/tuition-jobs" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
@@ -68,21 +68,21 @@ const Footer = () => {
 
             {/* Company Section */}
             <nav className="space-y-4">
-              <h6 className="footer-title text-xl font-semibold text-accent border-l-4 border-accent pl-3">Company</h6>
+              <h6 className="footer-title text-xl font-semibold text-secoendary border-l-4 border-accent pl-3">Company</h6>
               <div className="space-y-3">
                 <a href="/about" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   About us
                 </a>
                 <a href="/contact" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-secoendary mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   Contact
                 </a>
                 <a href="/careers" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   Careers
                 </a>
-               
+
               </div>
             </nav>
 
@@ -105,7 +105,7 @@ const Footer = () => {
                   </div>
                 </div>
               </div>
-              
+
               <nav>
                 <h6 className="footer-title text-xl font-semibold text-accent border-l-4 border-accent pl-3">Legal</h6>
                 <div className="space-x-3 mt-3 ">
@@ -128,15 +128,15 @@ const Footer = () => {
                 Empowering learners through personalized education.
               </p>
             </div>
-            
+
             {/* Newsletter Subscription */}
             <div className=" ">
               <div className="flex flex-col sm:flex-row items-center gap-2">
                 <p className="text-sm text-secondary mb-2 sm:mb-0">Subscribe to our newsletter:</p>
                 <div className="flex">
-                  <input 
-                    type="email" 
-                    placeholder="Your email" 
+                  <input
+                    type="email"
+                    placeholder="Your email"
                     className="px-4 py-2 md:w-64 rounded-l-lg bg-white/10 border border-accent text-secondary placeholder:text-secondary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                   />
                   <button className="px-4 py-2 bg-accent text-white font-medium rounded-r-lg hover:bg-accent/90 transition-colors">
