@@ -1,6 +1,6 @@
 export const getSettings = async () => {
   const res = await fetch(
-    "https://code-base-backend.vercel.app/api/v1/settings",
+    `${process.env.NEXT_PUBLIC_BACKEND_BASE_API}/settings`,
     {
       cache: "force-cache", // ✅ SEO + FAST
     }
