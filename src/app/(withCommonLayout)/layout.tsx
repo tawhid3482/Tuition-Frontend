@@ -4,9 +4,11 @@ import Navbar from "@/src/components/Shared/Navbar/page";
 const CommonLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
-      <div className="w-full md:w-7xl mx-auto ">
+      <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className=" h-screen overflow-y-auto">{children}</div>
+
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4">{children}</main>
+
         <Footer />
       </div>
     </>
