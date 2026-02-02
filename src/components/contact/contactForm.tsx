@@ -83,7 +83,7 @@ const ContactForm = () => {
       >
         {/* Form Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-linear-to-r from-primary to-secondary mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-linear-to-r from-primary to-accent mb-4">
             <FaPaperPlane className="text-2xl text-white" />
           </div>
           <h2 className="text-3xl font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -255,9 +255,9 @@ const ContactForm = () => {
           disabled={loading}
           className="
             w-full rounded-xl
-            bg-linear-to-r from-primary via-primary/90 to-secondary
+            bg-linear-to-r from-primary via-primary/90 to-accent
             text-white
-            py-4 px-6
+            py-2 px-4
             font-bold text-lg
             hover:shadow-xl
             hover:scale-[1.02]
@@ -283,7 +283,7 @@ const ContactForm = () => {
               </>
             )}
           </span>
-          <div className="absolute inset-0 bg-linear-to-r from-secondary to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-linear-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </button>
 
         {/* Privacy Note */}
