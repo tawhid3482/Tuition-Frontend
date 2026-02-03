@@ -11,24 +11,16 @@ const authApi = baseApi.injectEndpoints({
           data: formData,
         };
       },
-      invalidatesTags: [tagTypes.auth],
+      invalidatesTags: [tagTypes.user],
     }),
 
 
-    getAllUsers: builder.query({
+    getAllUser: builder.query({
       query: () => ({
-        url: "/auth/users",
+        url: `/user/allUsers`,
         method: "GET",
       }),
-      providesTags: [tagTypes.auth],
-    }),
-
-    getMYInfo: builder.query({
-      query: (id: string) => ({
-        url: `/auth/me/${id}`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.auth],
+      providesTags: [tagTypes.user],
     }),
 
   }),
@@ -36,6 +28,6 @@ const authApi = baseApi.injectEndpoints({
 
 export const {
   useCreateAuthMutation,
-  useGetAllUsersQuery,
+  useGetAllUserQuery,
 
 } = authApi;
