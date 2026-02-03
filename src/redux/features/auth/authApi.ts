@@ -3,16 +3,17 @@ import { tagTypes } from "../../tag-types";
 
 const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    createAuth: builder.mutation({
+    signupUser: builder.mutation({
       query: (formData) => {
         return {
-          url: "/auth/register",
+          url: "/auth/signup",
           method: "POST",
           data: formData,
         };
       },
       invalidatesTags: [tagTypes.auth],
     }),
+
     loginUser: builder.mutation({
       query: (formData) => {
         return {
@@ -23,92 +24,33 @@ const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: [tagTypes.auth],
     }),
-    loginAdmin: builder.mutation({
+
+    sendOtp: builder.mutation({
       query: (formData) => {
         return {
-          url: "/auth/login",
+          url: "/auth/send-otp",
           method: "POST",
           data: formData,
         };
       },
       invalidatesTags: [tagTypes.auth],
     }),
-    createStudentOrGuardian: builder.mutation({
+    verifyOtp: builder.mutation({
       query: (formData) => {
         return {
-          url: "/auth/register/user",
+          url: "/auth/verify-otp",
           method: "POST",
           data: formData,
         };
       },
       invalidatesTags: [tagTypes.auth],
     }),
-
-    checkPhoneNumber: builder.mutation({
-      query: (data) => {
+    resendOtp: builder.mutation({
+      query: (formData) => {
         return {
-          url: "/auth/check-phone",
+          url: "/auth/resend-otp",
           method: "POST",
-          data: data,
-        };
-      },
-      invalidatesTags: [tagTypes.auth],
-    }),
-
-    getAllUsers: builder.query({
-      query: () => ({
-        url: "/auth/users",
-        method: "GET",
-      }),
-      providesTags: [tagTypes.auth],
-    }),
-
-    getMYInfo: builder.query({
-      query: (id: string) => ({
-        url: `/auth/me/${id}`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.auth],
-    }),
-
-    getStudentStats: builder.query({
-      query: (id: string) => ({
-        url: `/auth/user/student-stats/${id}`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.auth],
-    }),
-
-    getTutorStats: builder.query({
-      query: (id: string) => ({
-        url: `/auth/user/tutor-stats/${id}`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.auth],
-    }),
-
-    getSingleAuthData: builder.query({
-      query: (id: string) => ({
-        url: `/auth/${id}`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.auth],
-    }),
-
-    deleteAuth: builder.mutation({
-      query: (id: string) => ({
-        url: `/auth/delete/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: [tagTypes.auth],
-    }),
-
-    updateUser: builder.mutation({
-      query: ({ id, data }) => {
-        return {
-          url: `/auth/update/${id}`,
-          method: "PATCH",
-          data: data,
+          data: formData,
         };
       },
       invalidatesTags: [tagTypes.auth],
@@ -134,45 +76,15 @@ const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: [tagTypes.auth],
     }),
-
-    updateAdminProfile: builder.mutation({
-      query: ({ id, data }) => {
-        return {
-          url: `/auth/update-admin-profile/${id}`,
-          method: "PATCH",
-          data: data,
-        };
-      },
-      invalidatesTags: [tagTypes.auth],
-    }),
-    updateUserProfile: builder.mutation({
-      query: ({ id, data }) => {
-        return {
-          url: `/auth/update-user-profile/${id}`,
-          method: "PATCH",
-          data: data,
-        };
-      },
-      invalidatesTags: [tagTypes.auth],
-    }),
   }),
 });
 
 export const {
-  useCreateAuthMutation,
-  useDeleteAuthMutation,
-  useGetAllUsersQuery,
-  useGetSingleAuthDataQuery,
-  useCheckPhoneNumberMutation,
-  useCreateStudentOrGuardianMutation,
-  useLoginAdminMutation,
+  useSignupUserMutation,
   useLoginUserMutation,
-  useUpdateUserMutation,
+  useSendOtpMutation,
+  useVerifyOtpMutation,
+  useResendOtpMutation,
   useChangePasswordMutation,
-  useUpdateAdminProfileMutation,
-  useUpdateUserProfileMutation,
-  useGetStudentStatsQuery,
-  useGetTutorStatsQuery,
-  useGetMYInfoQuery,
   useForgetPasswordMutation,
 } = authApi;
