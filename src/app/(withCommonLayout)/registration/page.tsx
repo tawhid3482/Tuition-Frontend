@@ -1,310 +1,335 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useSignupUserMutation, useSendOtpMutation, useVerifyOtpMutation, useResendOtpMutation } from '@/src/redux/features/auth/authApi';
-import { useGetAllDistrictQuery } from '@/src/redux/features/district/districtApi';
-import Head from 'next/head';
-import { Toaster, toast } from 'react-hot-toast';
-import { UserRole } from '@/src/types/auth';
-import RoleSelection from '@/src/components/Register/RoleSelection';
-import PersonalInfoForm from '@/src/components/Register/PersonalInfoForm';
-import LocationSelection from '@/src/components/Register/LocationSelection';
-import TutorSubjectsForm from '@/src/components/Register/TutorSubjectsForm';
-import PasswordForm from '@/src/components/Register/PasswordForm';
-import OTPVerification from '@/src/components/Register/OTPVerification';
-import SuccessMessage from '@/src/components/Register/SuccessMessage';
-
-type RegistrationStep = 'role' | 'personal' | 'location' | 'subjects' | 'password' | 'otp' | 'success';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Eye,
+  EyeOff,
+  UserPlus,
+  ArrowLeft,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
+import {
+  useLoginUserMutation,
+  useResendOtpMutation,
+  useSendOtpMutation,
+  useVerifyOtpMutation,
+} from "@/src/redux/features/auth/authApi";
+import { useSignupUserMutation } from "@/src/redux/features/user/userApi";
 
 const RegistrationPage = () => {
-    // API Hooks
-    const { data: DistrictData } = useGetAllDistrictQuery(undefined);
-    const [createUsers] = useSignupUserMutation();
-    const [sendOtp] = useSendOtpMutation();
-    const [verifyOtp] = useVerifyOtpMutation();
-    const [resendOtp] = useResendOtpMutation();
+  const router = useRouter();
 
-    // State Management
-    const [currentStep, setCurrentStep] = useState<RegistrationStep>('role');
-    const [userRole, setUserRole] = useState<UserRole>(UserRole.STUDENT);
-    const [formData, setFormData] = useState({
-        // Common Fields
-        name: '',
-        email: '',
-        phone: '',
-        gender: '',
-        password: '',
-        confirmPassword: '',
-        role: UserRole.STUDENT,
-        
-        // Tutor Specific Fields
-        district: '',
-        thana: '',
-        areas: [] as string[],
-        subjects: [] as string[],
-        medium: [] as string[],
-        
-        // OTP Verification
-        otp: '',
-        otpSent: false,
-        otpVerified: false,
-    });
+  // Redux mutations
+  const [createUsers] = useSignupUserMutation();
+  const [loginUser] = useLoginUserMutation();
+  const [sendOtp] = useSendOtpMutation();
+  const [verifyOtp] = useVerifyOtpMutation();
+  const [resendOtp] = useResendOtpMutation();
 
-    // Steps Configuration
-    const steps = {
-        student: ['role', 'personal', 'password', 'otp', 'success'],
-        tutor: ['role', 'personal', 'location', 'subjects', 'password', 'otp', 'success']
-    };
+  // ---------------- State ----------------
+  const [role, setRole] = useState<"STUDENT" | "TUTOR">("TUTOR"); // ✅ default tutor
+  const [step, setStep] = useState<"form" | "otp">("form");
+  const [loading, setLoading] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const currentSteps = userRole === UserRole.STUDENT ? steps.student : steps.tutor;
-    const currentStepIndex = currentSteps.indexOf(currentStep);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    gender: "",
+    acceptTerms: false,
+  });
 
-    // Handlers
-    const handleRoleSelect = (role: UserRole) => {
-        setUserRole(role);
-        setFormData(prev => ({ ...prev, role }));
-        setCurrentStep('personal');
-    };
+  // ---------------- Input handler ----------------
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
 
-    const handleNextStep = () => {
-        const nextIndex = currentStepIndex + 1;
-        if (nextIndex < currentSteps.length) {
-            setCurrentStep(currentSteps[nextIndex] as RegistrationStep);
-        }
-    };
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
 
-    const handlePrevStep = () => {
-        const prevIndex = currentStepIndex - 1;
-        if (prevIndex >= 0) {
-            setCurrentStep(currentSteps[prevIndex] as RegistrationStep);
-        }
-    };
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
 
-    const updateFormData = (field: string, value: any) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
+  // ---------------- Validation ----------------
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
 
-    const handleSendOTP = async () => {
-        try {
-            const response = await sendOtp({ email: formData.email }).unwrap();
-            if (response.success) {
-                toast.success('OTP sent to your email!');
-                updateFormData('otpSent', true);
-            }
-        } catch (error: any) {
-            toast.error(error?.data?.message || 'Failed to send OTP');
-        }
-    };
+    if (!role) newErrors.role = "Please select a role";
+    if (!formData.name) newErrors.name = "Name is required";
+    if (!formData.email) newErrors.email = "Email is required";
+    if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.password) newErrors.password = "Password is required";
+    if (!formData.confirmPassword)
+      newErrors.confirmPassword = "Confirm password is required";
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
+    if (!formData.acceptTerms)
+      newErrors.acceptTerms = "You must accept terms & conditions";
 
-    const handleVerifyOTP = async () => {
-        try {
-            const response = await verifyOtp({
-                email: formData.email,
-                otp: formData.otp
-            }).unwrap();
+    return newErrors;
+  };
 
-            if (response.success) {
-                toast.success('OTP verified successfully!');
-                updateFormData('otpVerified', true);
-                await handleRegistration();
-            }
-        } catch (error: any) {
-            toast.error(error?.data?.message || 'Invalid OTP');
-        }
-    };
+  // ---------------- Submit (Send OTP) ----------------
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrors({});
+    setSuccessMessage("");
 
-    const handleResendOTP = async () => {
-        try {
-            const response = await resendOtp({ email: formData.email }).unwrap();
-            if (response.success) {
-                toast.success('New OTP sent to your email!');
-            }
-        } catch (error: any) {
-            toast.error(error?.data?.message || 'Failed to resend OTP');
-        }
-    };
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      setLoading(false);
+      return;
+    }
 
-    const handleRegistration = async () => {
-        try {
-            const registrationData = {
-                name: formData.name,
-                email: formData.email,
-                phone: formData.phone,
-                password: formData.password,
-                role: userRole,
-                gender: formData.gender,
-                ...(userRole === UserRole.TUTOR && {
-                    district: formData.district,
-                    thana: formData.thana,
-                    areas: formData.areas,
-                    subjects: formData.subjects,
-                    medium: formData.medium,
-                })
-            };
+    try {
+      await sendOtp({ email: formData.email }).unwrap();
+      setStep("otp");
+      setSuccessMessage("OTP sent to your email");
+    } catch (err: any) {
+      setErrors({ email: err?.data?.message || "Failed to send OTP" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            const response = await createUsers(registrationData).unwrap();
-            
-            if (response.success) {
-                setCurrentStep('success');
-                toast.success('Registration successful! Redirecting to home...');
-            }
-        } catch (error: any) {
-            toast.error(error?.data?.message || 'Registration failed');
-        }
-    };
+  // ---------------- Verify OTP & Create User ----------------
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    // SEO Metadata
-    const pageTitle = userRole === UserRole.TUTOR 
-        ? 'Become a Tutor - Join Our Teaching Platform' 
-        : 'Student Registration - Start Learning Today';
-    const pageDescription = userRole === UserRole.TUTOR
-        ? 'Register as a tutor to teach students online. Flexible schedule, good earnings, and make a difference.'
-        : 'Create your student account to find the best tutors and improve your academic performance.';
+    if (!otp) {
+      setErrors({ otp: "OTP is required" });
+      return;
+    }
 
-    return (
-        <>
-            <Head>
-                <title>{pageTitle}</title>
-                <meta name="description" content={pageDescription} />
-                <meta name="keywords" content={
-                    userRole === UserRole.TUTOR 
-                    ? "online tutoring, become a tutor, teaching jobs, home tuition" 
-                    : "student registration, find tutors, online learning, academic help"
-                } />
-                <meta property="og:title" content={pageTitle} />
-                <meta property="og:description" content={pageDescription} />
-                <meta property="og:type" content="website" />
-                <link rel="canonical" href="https://yourdomain.com/register" />
-            </Head>
+    setLoading(true);
+    setErrors({});
 
-            <Toaster position="top-right" />
+    try {
+      await verifyOtp({ email: formData.email, otp }).unwrap();
 
-            <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
-                <div className="max-w-4xl mx-auto">
-                    {/* Header */}
-                    <header className="text-center mb-8">
-                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-                            {userRole === UserRole.TUTOR ? 'Join as a Tutor' : 'Student Registration'}
-                        </h1>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
-                            {userRole === UserRole.TUTOR 
-                                ? 'Share your knowledge and earn money by teaching students'
-                                : 'Find the perfect tutor to help you achieve academic success'
-                            }
-                        </p>
-                    </header>
+      await createUsers({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        gender: formData.gender,
+        role,
+      }).unwrap();
 
-                    {/* Progress Bar */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between">
-                            {currentSteps.map((step, index) => (
-                                <div key={step} className="flex items-center">
-                                    <div className={`
-                                        w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
-                                        ${currentStepIndex >= index 
-                                            ? 'bg-blue-600 text-white' 
-                                            : 'bg-gray-200 text-gray-500'
-                                        }
-                                    `}>
-                                        {index + 1}
-                                    </div>
-                                    <div className="ml-2 hidden sm:block">
-                                        <div className="text-xs font-medium text-gray-700 capitalize">
-                                            {step === 'role' ? 'Select Role' : 
-                                             step === 'personal' ? 'Personal Info' :
-                                             step === 'location' ? 'Location' :
-                                             step === 'subjects' ? 'Subjects' :
-                                             step === 'password' ? 'Password' :
-                                             step === 'otp' ? 'Verify OTP' : 'Complete'}
-                                        </div>
-                                    </div>
-                                    {index < currentSteps.length - 1 && (
-                                        <div className={`
-                                            h-1 w-16 sm:w-24 mx-2
-                                            ${currentStepIndex > index ? 'bg-blue-600' : 'bg-gray-200'}
-                                        `} />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+      await loginUser({
+        email: formData.email,
+        password: formData.password,
+      });
 
-                    {/* Registration Form */}
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
-                        {currentStep === 'role' && (
-                            <RoleSelection 
-                                selectedRole={userRole}
-                                onRoleSelect={handleRoleSelect}
-                            />
-                        )}
+      setSuccessMessage("Account created successfully 🎉");
+      router.push("/");
+    } catch (err: any) {
+      setErrors({ otp: err?.data?.message || "Invalid OTP" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                        {currentStep === 'personal' && (
-                            <PersonalInfoForm
-                                formData={formData}
-                                updateFormData={updateFormData}
-                                onNext={handleNextStep}
-                                onPrev={handlePrevStep}
-                            />
-                        )}
+  // ---------------- Resend OTP ----------------
+  const handleResendOtp = async () => {
+    setLoading(true);
+    try {
+      await resendOtp({ email: formData.email }).unwrap();
+      setSuccessMessage("OTP resent successfully");
+    } catch (err: any) {
+      setErrors({ otp: err?.data?.message || "Failed to resend OTP" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                        {currentStep === 'location' && userRole === UserRole.TUTOR && (
-                            <LocationSelection
-                                formData={formData}
-                                updateFormData={updateFormData}
-                                onNext={handleNextStep}
-                                onPrev={handlePrevStep}
-                                districts={DistrictData?.data || []}
-                            />
-                        )}
+  return (
+    <div className="min-h-screen bg-linear-to-br from-primary/5 via-white to-primary/10 flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <Link
+          href="/"
+          className="inline-flex items-center text-sm text-gray-600 hover:text-primary mb-6"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to home
+        </Link>
 
-                        {currentStep === 'subjects' && userRole === UserRole.TUTOR && (
-                            <TutorSubjectsForm
-                                formData={formData}
-                                updateFormData={updateFormData}
-                                onNext={handleNextStep}
-                                onPrev={handlePrevStep}
-                            />
-                        )}
-
-                        {currentStep === 'password' && (
-                            <PasswordForm
-                                formData={formData}
-                                updateFormData={updateFormData}
-                                onNext={handleNextStep}
-                                onPrev={handlePrevStep}
-                                userRole={userRole}
-                            />
-                        )}
-
-                        {currentStep === 'otp' && (
-                            <OTPVerification
-                                formData={formData}
-                                updateFormData={updateFormData}
-                                onVerify={handleVerifyOTP}
-                                onResend={handleResendOTP}
-                                onSend={handleSendOTP}
-                                onPrev={handlePrevStep}
-                            />
-                        )}
-
-                        {currentStep === 'success' && (
-                            <SuccessMessage
-                                userRole={userRole}
-                                userName={formData.name}
-                            />
-                        )}
-                    </div>
-
-                    {/* Footer */}
-                    <footer className="mt-8 text-center text-sm text-gray-500">
-                        <p>By registering, you agree to our <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a></p>
-                        <p className="mt-2">© {new Date().getFullYear()} Tutor Finder. All rights reserved.</p>
-                    </footer>
-                </div>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100">
+          <div className="p-6 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+                <UserPlus className="text-white" />
+              </div>
             </div>
-        </>
-    );
+            <h1 className="text-2xl font-bold">Create Account</h1>
+            <p className="text-sm text-gray-600">
+              {step === "form" ? "Sign up to get started" : "Verify OTP"}
+            </p>
+          </div>
+
+          {successMessage && (
+            <div className="mx-6 mb-4 bg-green-50 border border-green-200 rounded-lg p-3 text-xs text-green-700 flex gap-2">
+              <CheckCircle className="w-4 h-4" />
+              {successMessage}
+            </div>
+          )}
+
+          <div className="p-6">
+            {step === "form" && (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Role */}
+                <div className="flex gap-3">
+                  {["TUTOR", "STUDENT"].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setRole(r as any)}
+                      className={`w-full py-2 rounded-lg border ${
+                        role === r ? "bg-primary text-white" : "border-gray-300"
+                      }`}
+                    >
+                      {r === "TUTOR" ? "TUTOR" : "STUDENT"}
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  name="name"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="input"
+                />
+
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="input"
+                />
+
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                  className="input"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+
+                <div className="relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-2.5"
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <input
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-2.5"
+                  >
+                    {showConfirmPassword ? <EyeOff /> : <Eye />}
+                  </button>
+                </div>
+
+                <label className="flex items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    name="acceptTerms"
+                    checked={formData.acceptTerms}
+                    onChange={handleInputChange}
+                  />
+                  I agree to Terms & Privacy
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-primary text-white py-2 rounded-lg"
+                >
+                  {loading ? (
+                    <Loader2 className="animate-spin mx-auto" />
+                  ) : (
+                    "Continue"
+                  )}
+                </button>
+              </form>
+            )}
+
+            {step === "otp" && (
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <input
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="input"
+                />
+
+                <button className="w-full bg-primary text-white py-2 rounded-lg">
+                  {loading ? (
+                    <Loader2 className="animate-spin mx-auto" />
+                  ) : (
+                    "Verify OTP"
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  className="w-full border border-primary text-primary py-2 rounded-lg"
+                >
+                  Resend OTP
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default RegistrationPage;

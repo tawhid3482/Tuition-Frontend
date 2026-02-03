@@ -3,17 +3,6 @@ import { tagTypes } from "../../tag-types";
 
 const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    signupUser: builder.mutation({
-      query: (formData) => {
-        return {
-          url: "/auth/signup",
-          method: "POST",
-          data: formData,
-        };
-      },
-      invalidatesTags: [tagTypes.auth],
-    }),
-
     loginUser: builder.mutation({
       query: (formData) => {
         return {
@@ -80,7 +69,6 @@ const authApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useSignupUserMutation,
   useLoginUserMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
