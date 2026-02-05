@@ -14,6 +14,23 @@ const authApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.auth],
     }),
 
+    LogOut: builder.mutation({
+      query: () => {
+        return {
+          url: "/auth/logout",
+          method: "POST",
+        };
+      },
+      invalidatesTags: [tagTypes.auth],
+    }),
+     getSession: builder.query({
+      query: () => ({
+        url: "/auth/session",
+        method: "GET",
+      }),
+      providesTags: [tagTypes.auth],
+    }),
+
     sendOtp: builder.mutation({
       query: (formData) => {
         return {
@@ -75,4 +92,6 @@ export const {
   useResendOtpMutation,
   useChangePasswordMutation,
   useForgetPasswordMutation,
+  useLogOutMutation,
+  useGetSessionQuery,
 } = authApi;

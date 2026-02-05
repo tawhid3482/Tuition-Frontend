@@ -3,7 +3,7 @@ import { tagTypes } from "../../tag-types";
 
 const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
- signupUser: builder.mutation({
+    signupUser: builder.mutation({
       query: (formData) => {
         return {
           url: "/user/signup",
@@ -14,7 +14,6 @@ const authApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.user],
     }),
 
-
     getAllUser: builder.query({
       query: () => ({
         url: `/user/allUsers`,
@@ -22,12 +21,15 @@ const authApi = baseApi.injectEndpoints({
       }),
       providesTags: [tagTypes.user],
     }),
-
+    getMe: builder.query({
+      query: () => ({
+        url: `/user/me`,
+        method: "GET",
+      }),
+      providesTags: [tagTypes.user],
+    }),
   }),
 });
 
-export const {
-  useSignupUserMutation,
-  useGetAllUserQuery,
-
-} = authApi;
+export const { useSignupUserMutation, useGetAllUserQuery, useGetMeQuery } =
+  authApi;

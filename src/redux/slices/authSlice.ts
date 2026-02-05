@@ -1,6 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {
+interface AuthState {
+  user: any | null;
+  isAuthenticated: boolean;
+}
+
+const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
 };

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Providers from "@/src/lib/Providers/Providers";
 import { getSettings } from "@/src/lib/api/getSettings";
+import AuthProvider from "../lib/Providers/AuthProvider";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -51,8 +52,10 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
       >
         <Providers>
-          <Toaster position="top-right" />
-          {children}
+          <AuthProvider>
+            <Toaster position="top-right" />
+            {children}
+          </AuthProvider>
         </Providers>
       </body>
     </html>
