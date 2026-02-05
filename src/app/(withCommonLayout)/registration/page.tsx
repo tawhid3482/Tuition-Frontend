@@ -268,7 +268,7 @@ const RegistrationPage = () => {
       toast.success(
         <div className="flex items-center space-x-2">
           <CheckCircle className="w-4 h-4 text-green-500" />
-          <span>Account created successfully! Redirecting to login...</span>
+          <span>Account created successfully! Redirecting to Home..</span>
         </div>,
         {
           duration: 3000,
@@ -561,11 +561,11 @@ const RegistrationPage = () => {
                           type="text"
                           value={formData.name}
                           onChange={handleInputChange}
-                          className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border ${
+                          className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${
                             errors.name
                               ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                               : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200`}
+                          } focus:outline-none focus:ring-1 transition-all duration-200 `}
                           placeholder="John Doe"
                           aria-describedby={
                             errors.name ? "name-error" : undefined
@@ -608,11 +608,11 @@ const RegistrationPage = () => {
                           autoComplete="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border ${
+                          className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${
                             errors.email
                               ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                               : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200`}
+                          } focus:outline-none focus:ring-1 transition-all duration-200 `}
                           placeholder="you@example.com"
                           aria-describedby={
                             errors.email ? "email-error" : undefined
@@ -647,11 +647,11 @@ const RegistrationPage = () => {
                           name="gender"
                           value={formData.gender}
                           onChange={handleInputChange}
-                          className={`text-sm w-full px-3 py-2.5 rounded-lg border ${
+                          className={`text-sm w-full px-3 py-2.5 rounded-lg border text-black ${
                             errors.gender
                               ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                               : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200 appearance-none`}
+                          } focus:outline-none focus:ring-1 transition-all duration-200  appearance-none`}
                           aria-describedby={
                             errors.gender ? "gender-error" : undefined
                           }
@@ -664,7 +664,7 @@ const RegistrationPage = () => {
                         </select>
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                           <svg
-                            className="h-4 w-4 text-gray-400"
+                            className="h-4 w-4 text-black"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -712,11 +712,11 @@ const RegistrationPage = () => {
                           type={showPassword ? "text" : "password"}
                           value={formData.password}
                           onChange={handleInputChange}
-                          className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg border ${
+                          className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg text-black border ${
                             errors.password
                               ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                               : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200`}
+                          } focus:outline-none focus:ring-1 transition-all duration-200 `}
                           placeholder="••••••••"
                           aria-describedby={
                             errors.password ? "password-error" : undefined
@@ -779,7 +779,7 @@ const RegistrationPage = () => {
                           type={showConfirmPassword ? "text" : "password"}
                           value={formData.confirmPassword}
                           onChange={handleInputChange}
-                          className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg border ${
+                          className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg text-black border ${
                             errors.confirmPassword
                               ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                               : "border-gray-300 focus:ring-primary focus:border-primary"
@@ -935,7 +935,7 @@ const RegistrationPage = () => {
                             )
                           }
                           maxLength={6}
-                          className="text-sm pl-9 w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary focus:outline-none focus:ring-1 transition-all duration-200 text-center tracking-widest"
+                          className="text-sm text-black pl-9 w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary focus:outline-none focus:ring-1 transition-all duration-200 text-center tracking-widest"
                           placeholder="123456"
                           aria-label="Enter OTP code"
                           inputMode="numeric"

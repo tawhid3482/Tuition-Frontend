@@ -299,7 +299,7 @@ const Login = () => {
                         required
                         value={formData.email}
                         onChange={handleInputChange}
-                        className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border ${errors.email ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-gray-300 focus:ring-primary focus:border-primary"} focus:outline-none focus:ring-1 transition-all duration-200`}
+                        className={`text-sm pl-9 w-full px-3 text-black py-2.5 rounded-lg border ${errors.email ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-gray-300 focus:ring-primary focus:border-primary"} focus:outline-none focus:ring-1 transition-all duration-200`}
                         placeholder="you@example.com"
                         aria-describedby={
                           errors.email ? "email-error" : undefined
@@ -352,7 +352,7 @@ const Login = () => {
                         required
                         value={formData.password}
                         onChange={handleInputChange}
-                        className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg border ${errors.password ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-gray-300 focus:ring-primary focus:border-primary"} focus:outline-none focus:ring-1 transition-all duration-200`}
+                        className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg text-black border ${errors.password ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-gray-300 focus:ring-primary focus:border-primary"} focus:outline-none focus:ring-1 transition-all duration-200`}
                         placeholder="••••••••"
                         aria-describedby={
                           errors.password ? "password-error" : undefined
