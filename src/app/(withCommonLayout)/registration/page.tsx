@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
@@ -46,6 +46,7 @@ const RegistrationPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [otpSentTime, setOtpSentTime] = useState<number | null>(null);
   const [canResendOtp, setCanResendOtp] = useState(true);
+  const [countdown, setCountdown] = useState(0);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -57,6 +58,33 @@ const RegistrationPage = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Countdown timer effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (otpSentTime && !canResendOtp) {
+      const updateCountdown = () => {
+        const elapsed = Date.now() - otpSentTime;
+        const remaining = Math.max(0, 30000 - elapsed);
+        const seconds = Math.ceil(remaining / 1000);
+        
+        setCountdown(seconds);
+        
+        if (seconds <= 0) {
+          setCanResendOtp(true);
+        } else {
+          timer = setTimeout(updateCountdown, 1000);
+        }
+      };
+      
+      updateCountdown();
+    }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [otpSentTime, canResendOtp]);
 
   // Validation functions
   const validateName = (name: string) => {
@@ -117,7 +145,7 @@ const RegistrationPage = () => {
     }
   };
 
-  // Submit (Send OTP) - FIXED
+  // Submit (Send OTP)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -159,8 +187,11 @@ const RegistrationPage = () => {
     const loadingToast = toast.loading("Sending OTP to your email...");
 
     try {
-      // Call send OTP API
-      const result = await sendOtp({ email: formData.email }).unwrap();
+      // Call send OTP API - ফিক্স: name সহ পাঠানো
+      const result = await sendOtp({ 
+        email: formData.email,
+        name: formData.name 
+      }).unwrap();
 
       toast.dismiss(loadingToast);
 
@@ -168,16 +199,24 @@ const RegistrationPage = () => {
         setStep("otp");
         setOtpSentTime(Date.now());
         setCanResendOtp(false);
-
-        // Enable resend OTP button after 30 seconds
-        setTimeout(() => {
-          setCanResendOtp(true);
-        }, 30000);
+        setCountdown(30);
 
         toast.success(
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-4 h-4 text-green-500" />
             <span>OTP sent successfully! Check your email.</span>
+          </div>,
+          {
+            duration: 4000,
+            position: "top-right",
+          },
+        );
+      } else {
+        // যদি success false হয় কিন্তু error না থাকে
+        toast.error(
+          <div className="flex items-center space-x-2">
+            <XCircle className="w-4 h-4 text-red-500" />
+            <span>Failed to send OTP. Please try again.</span>
           </div>,
           {
             duration: 4000,
@@ -203,6 +242,8 @@ const RegistrationPage = () => {
         errorMessage = "Server error. Please try again later.";
       } else if (!navigator.onLine) {
         errorMessage = "No internet connection. Please check your network.";
+      } else if (err?.message?.includes("Network")) {
+        errorMessage = "Network error. Please check your connection.";
       }
 
       toast.error(
@@ -220,7 +261,7 @@ const RegistrationPage = () => {
     }
   };
 
-  // Verify OTP & Create User - FIXED
+  // Verify OTP & Create User
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -265,21 +306,22 @@ const RegistrationPage = () => {
 
       toast.dismiss(loadingToast);
 
-      toast.success(
-        <div className="flex items-center space-x-2">
-          <CheckCircle className="w-4 h-4 text-green-500" />
-          <span>Account created successfully! Redirecting to Home..</span>
-        </div>,
-        {
-          duration: 3000,
-          position: "top-right",
-        },
-      );
-
+      // Step 3: Auto login
       await loginUser({
         email: formData.email,
         password: formData.password,
       }).unwrap();
+
+      toast.success(
+        <div className="flex items-center space-x-2">
+          <CheckCircle className="w-4 h-4 text-green-500" />
+          <span>Account created successfully! Redirecting to Home...</span>
+        </div>,
+        {
+          duration: 2000,
+          position: "top-right",
+        },
+      );
 
       setTimeout(() => {
         router.push("/");
@@ -299,6 +341,8 @@ const RegistrationPage = () => {
           errorMessage = "OTP has expired. Please request a new one.";
         } else if (err?.data?.includes?.("invalid")) {
           errorMessage = "Invalid OTP. Please check and try again.";
+        } else if (err?.data?.includes?.("already exists")) {
+          errorMessage = "User already exists with this email.";
         } else {
           errorMessage = "Invalid OTP or request data.";
         }
@@ -327,10 +371,10 @@ const RegistrationPage = () => {
     }
   };
 
-  // Resend OTP - FIXED
+  // Resend OTP
   const handleResendOtp = async () => {
     if (!canResendOtp) {
-      toast.error("Please wait 30 seconds before resending OTP");
+      toast.error(`Please wait ${countdown} seconds before resending OTP`);
       return;
     }
 
@@ -338,23 +382,33 @@ const RegistrationPage = () => {
     const loadingToast = toast.loading("Resending OTP...");
 
     try {
-      const result = await resendOtp({ email: formData.email }).unwrap();
+      const result = await resendOtp({ 
+        email: formData.email,
+        name: formData.name 
+      }).unwrap();
 
       toast.dismiss(loadingToast);
 
       if (result?.success) {
         setOtpSentTime(Date.now());
         setCanResendOtp(false);
-
-        // Enable resend OTP button after 30 seconds
-        setTimeout(() => {
-          setCanResendOtp(true);
-        }, 30000);
+        setCountdown(30);
 
         toast.success(
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-4 h-4 text-green-500" />
             <span>OTP resent successfully! Check your email.</span>
+          </div>,
+          {
+            duration: 4000,
+            position: "top-right",
+          },
+        );
+      } else {
+        toast.error(
+          <div className="flex items-center space-x-2">
+            <XCircle className="w-4 h-4 text-red-500" />
+            <span>Failed to resend OTP. Please try again.</span>
           </div>,
           {
             duration: 4000,
@@ -373,6 +427,8 @@ const RegistrationPage = () => {
         errorMessage = "Too many resend attempts. Please try again later.";
       } else if (err?.status === 400) {
         errorMessage = "Unable to resend OTP. Please try again.";
+      } else if (err?.status === 500) {
+        errorMessage = "Server error. Please try again later.";
       }
 
       toast.error(
@@ -390,20 +446,8 @@ const RegistrationPage = () => {
     }
   };
 
-  // Calculate remaining time for OTP resend
-  const getRemainingTime = () => {
-    if (!otpSentTime || canResendOtp) return null;
-
-    const elapsed = Date.now() - otpSentTime;
-    const remaining = Math.max(0, 30000 - elapsed);
-    return Math.ceil(remaining / 1000);
-  };
-
-  const remainingSeconds = getRemainingTime();
-
   return (
     <>
-      {/* SEO Head Section */}
       <Head>
         <title>Create Account | Sign Up</title>
         <meta
@@ -431,7 +475,6 @@ const RegistrationPage = () => {
         <link rel="canonical" href="https://yourdomain.com/registration" />
       </Head>
 
-      {/* Breadcrumb Navigation for SEO */}
       <nav aria-label="Breadcrumb" className="sr-only">
         <ol itemScope itemType="https://schema.org/BreadcrumbList">
           <li
@@ -457,7 +500,6 @@ const RegistrationPage = () => {
 
       <div className="min-h-screen bg-linear-to-br from-primary/5 via-white to-primary/10 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
-          {/* Back Button */}
           <Link
             href="/"
             className="inline-flex items-center text-xs font-medium text-gray-600 hover:text-primary mb-6 transition-colors"
@@ -467,10 +509,8 @@ const RegistrationPage = () => {
             Back to home
           </Link>
 
-          {/* Card Container */}
           <main role="main" aria-label="Registration form">
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              {/* Card Header */}
               <header className="p-6 sm:p-8 pb-0">
                 <div className="text-center">
                   <div className="flex justify-center mb-4">
@@ -489,7 +529,6 @@ const RegistrationPage = () => {
                 </div>
               </header>
 
-              {/* Form Content */}
               <section
                 aria-labelledby="registration-form-title"
                 className="p-6 sm:p-8"
@@ -504,7 +543,6 @@ const RegistrationPage = () => {
                     className="space-y-4"
                     aria-label="Registration form"
                   >
-                    {/* Role Selection */}
                     <div className="space-y-2">
                       <label className="block text-xs font-medium text-gray-700">
                         I want to join as
@@ -540,7 +578,6 @@ const RegistrationPage = () => {
                       )}
                     </div>
 
-                    {/* Name Field */}
                     <div className="space-y-1.5">
                       <label
                         htmlFor="name"
@@ -565,7 +602,7 @@ const RegistrationPage = () => {
                             errors.name
                               ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                               : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200 `}
+                          } focus:outline-none focus:ring-1 transition-all duration-200`}
                           placeholder="John Doe"
                           aria-describedby={
                             errors.name ? "name-error" : undefined
@@ -586,7 +623,6 @@ const RegistrationPage = () => {
                       )}
                     </div>
 
-                    {/* Email Field */}
                     <div className="space-y-1.5">
                       <label
                         htmlFor="email"
@@ -612,7 +648,7 @@ const RegistrationPage = () => {
                             errors.email
                               ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                               : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200 `}
+                          } focus:outline-none focus:ring-1 transition-all duration-200`}
                           placeholder="you@example.com"
                           aria-describedby={
                             errors.email ? "email-error" : undefined
@@ -633,7 +669,6 @@ const RegistrationPage = () => {
                       )}
                     </div>
 
-                    {/* Gender Field */}
                     <div className="space-y-1.5">
                       <label
                         htmlFor="gender"
@@ -651,7 +686,7 @@ const RegistrationPage = () => {
                             errors.gender
                               ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                               : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200  appearance-none`}
+                          } focus:outline-none focus:ring-1 transition-all duration-200 appearance-none`}
                           aria-describedby={
                             errors.gender ? "gender-error" : undefined
                           }
@@ -691,7 +726,6 @@ const RegistrationPage = () => {
                       )}
                     </div>
 
-                    {/* Password Field */}
                     <div className="space-y-1.5">
                       <label
                         htmlFor="password"
@@ -716,7 +750,7 @@ const RegistrationPage = () => {
                             errors.password
                               ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                               : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200 `}
+                          } focus:outline-none focus:ring-1 transition-all duration-200`}
                           placeholder="••••••••"
                           aria-describedby={
                             errors.password ? "password-error" : undefined
@@ -758,7 +792,6 @@ const RegistrationPage = () => {
                       )}
                     </div>
 
-                    {/* Confirm Password Field */}
                     <div className="space-y-1.5">
                       <label
                         htmlFor="confirmPassword"
@@ -831,7 +864,6 @@ const RegistrationPage = () => {
                       )}
                     </div>
 
-                    {/* Terms & Conditions */}
                     <div className="flex items-start">
                       <div className="flex items-center h-5">
                         <input
@@ -883,7 +915,6 @@ const RegistrationPage = () => {
                       </div>
                     </div>
 
-                    {/* Submit Button */}
                     <button
                       type="submit"
                       disabled={isLoading}
@@ -909,7 +940,6 @@ const RegistrationPage = () => {
                     </button>
                   </form>
                 ) : (
-                  /* OTP Verification Form */
                   <form
                     onSubmit={handleVerifyOtp}
                     className="space-y-4"
@@ -947,6 +977,11 @@ const RegistrationPage = () => {
                         Enter the 6-digit code sent to{" "}
                         <span className="font-medium">{formData.email}</span>
                       </p>
+                      {countdown > 0 && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          You can resend OTP in {countdown} seconds
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex gap-3">
@@ -977,10 +1012,12 @@ const RegistrationPage = () => {
                         type="button"
                         onClick={handleResendOtp}
                         disabled={isLoading || !canResendOtp}
-                        className="flex-1 border border-gray-300 hover:border-primary text-gray-700 hover:text-primary font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed relative"
+                        className="flex-1 border border-gray-300 hover:border-primary text-gray-700 hover:text-primary font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                       >
-                        {remainingSeconds ? (
-                          <span>Resend ({remainingSeconds}s)</span>
+                        {isLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : !canResendOtp ? (
+                          <span>Resend ({countdown}s)</span>
                         ) : (
                           "Resend OTP"
                         )}
@@ -999,7 +1036,6 @@ const RegistrationPage = () => {
                   </form>
                 )}
 
-                {/* Divider */}
                 <div className="mt-6">
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
@@ -1008,7 +1044,6 @@ const RegistrationPage = () => {
                   </div>
                 </div>
 
-                {/* Login Navigation */}
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <div className="text-center">
                     <p className="text-xs text-gray-600">
@@ -1034,7 +1069,6 @@ const RegistrationPage = () => {
             </div>
           </main>
 
-          {/* Footer Links */}
           <footer className="mt-6 text-center">
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-gray-500">
               <Link
