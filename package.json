@@ -12,6 +12,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.3",
+    "firebase": "^12.9.0",
     "framer-motion": "^12.29.3",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.563.0",
