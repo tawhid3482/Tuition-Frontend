@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/navbar/MobileNav.tsx
 "use client";
@@ -20,10 +19,7 @@ interface MobileNavProps {
   notifications: any[];
   notificationsLoading: boolean;
   unreadCount: number;
-  onNotificationClick: (
-    notificationId: string,
-    e?: React.MouseEvent,
-  ) => Promise<void>;
+  onNotificationClick: (notificationId: string, e?: React.MouseEvent) => Promise<void>;
   onMarkAllAsRead: (e: React.MouseEvent) => Promise<void>;
   refetchNotifications: () => void;
   onLogout: () => Promise<void>;
@@ -53,12 +49,21 @@ export default function MobileNav({
     onItemClick(itemName);
     router.push(href);
     setIsOpen(false);
+    setDropdownOpen(null);
+  };
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    // শুধুমাত্র overlay এ ক্লিক করলে close হবে, inner content এ ক্লিক করলে না
+    if (e.target === e.currentTarget) {
+      setIsOpen(false);
+    }
   };
 
   const isActive = (itemName: string) => activeItem === itemName;
 
   return (
     <>
+      {/* Mobile Menu Button - এইটা Navbar এর মধ্যে থাকবে */}
       <div className="flex items-center space-x-2 md:hidden">
         {isAuthenticated && (
           <NotificationBell
@@ -76,18 +81,34 @@ export default function MobileNav({
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="p-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-colors duration-200 focus:outline-none"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
+      {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="md:hidden fixed inset-0 bg-black/20 z-40">
+        <div 
+          className="md:hidden fixed inset-0 bg-black/20 z-40"
+          onClick={handleOverlayClick}
+        >
           <div
             className="absolute top-16 bottom-14 left-0 right-0 bg-white shadow-xl overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()} // Inner content এ ক্লিক হলে overlay close হবে না
           >
             <div className="p-4 h-full">
+              {/* Close button at top */}
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 text-gray-600 hover:text-primary rounded-full hover:bg-primary/5"
+                  aria-label="Close menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
               {isAuthenticated && user ? (
                 <div className="flex items-center space-x-3 p-3 mb-4 bg-linear-to-r from-primary/5 to-primary/10 rounded-xl">
                   <div className="relative">
@@ -104,14 +125,7 @@ export default function MobileNav({
                     ) : (
                       <div className="h-10 w-10 bg-linear-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-sm">
                         <span className="text-white font-bold text-sm">
-                          {user?.name
-                            ? user.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .toUpperCase()
-                                .slice(0, 2)
-                            : "U"}
+                          {user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "U"}
                         </span>
                       </div>
                     )}
@@ -147,9 +161,7 @@ export default function MobileNav({
                       <>
                         <button
                           onClick={() =>
-                            setDropdownOpen(
-                              dropdownOpen === item.name ? null : item.name,
-                            )
+                            setDropdownOpen(dropdownOpen === item.name ? null : item.name)
                           }
                           className={`flex items-center justify-between w-full px-3 py-3 rounded-lg transition-all duration-200 ${
                             isActive(item.name)
@@ -163,9 +175,7 @@ export default function MobileNav({
                             >
                               {item.icon}
                             </div>
-                            <span className="font-medium text-sm">
-                              {item.name}
-                            </span>
+                            <span className="font-medium text-sm">{item.name}</span>
                           </div>
                           <ChevronDown
                             className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${dropdownOpen === item.name ? "rotate-180" : ""}`}
@@ -179,10 +189,7 @@ export default function MobileNav({
                                 key={subItem.name}
                                 className="px-3 py-2"
                                 onClick={() => {
-                                  handleMobileNavigation(
-                                    subItem.href,
-                                    item.name,
-                                  );
+                                  handleMobileNavigation(subItem.href, item.name);
                                 }}
                               >
                                 <div className="flex items-center text-gray-600 hover:text-primary transition-colors duration-200 group rounded-lg hover:bg-primary/5 cursor-pointer px-2 py-1.5">
@@ -213,15 +220,45 @@ export default function MobileNav({
                           >
                             {item.icon}
                           </div>
-                          <span className="font-medium text-sm">
-                            {item.name}
-                          </span>
+                          <span className="font-medium text-sm">{item.name}</span>
                         </div>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
+
+              {/* Mobile Footer Actions */}
+              {isAuthenticated && (
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div
+                    onClick={() => handleMobileNavigation("/dashboard", "Dashboard")}
+                    className="w-full bg-primary text-white px-3 py-2.5 rounded-lg hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow flex items-center justify-center space-x-2 mb-2 cursor-pointer"
+                  >
+                    <span>Dashboard</span>
+                  </div>
+                  <div
+                    onClick={() => handleMobileNavigation("/notifications", "Notifications")}
+                    className="w-full border border-primary text-primary px-3 py-2.5 rounded-lg hover:bg-primary/5 transition-all duration-200 font-medium text-sm flex items-center justify-center space-x-2 mb-2 cursor-pointer"
+                  >
+                    <span>View All Notifications</span>
+                    {unreadCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    onClick={async () => {
+                      await onLogout();
+                      setIsOpen(false);
+                    }}
+                    className="w-full border border-gray-300 text-gray-700 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium text-sm flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    <span>Log Out</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

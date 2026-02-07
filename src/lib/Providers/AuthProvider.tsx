@@ -13,7 +13,6 @@
 //   const dispatch = useDispatch();
 //   const { data, isSuccess, isError } = useGetSessionQuery(undefined);
 
-//   // console.log("AuthProvider - Session Data:", data?.data?.isAuthenticated, data?.data?.user);
 
 //   useEffect(() => {
 //     if (isSuccess) {
@@ -50,7 +49,6 @@ export default function AuthProvider({
   const { data, isSuccess, isError } = useGetSessionQuery(undefined);
   const [syncNotifications] = useSyncPendingNotificationsMutation();
 
-  // console.log("AuthProvider - Session Data:", data?.data?.isAuthenticated, data?.data?.user);
 
   useEffect(() => {
     if (isSuccess) {
@@ -60,14 +58,12 @@ export default function AuthProvider({
         
         // ✅ User logged in successfully, sync pending notifications
         if (userData?.id) {
-          console.log("User logged in, will sync pending notifications...", userData.id);
           
           // Wait for 3 seconds to ensure FCM is initialized
           const syncTimer = setTimeout(() => {
             syncNotifications({ userId: userData.id })
               .unwrap()
               .then(() => {
-                console.log("Pending notifications synced successfully");
               })
               .catch((error) => {
                 console.error("Failed to sync notifications:", error);

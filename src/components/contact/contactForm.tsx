@@ -34,7 +34,6 @@ const ContactForm = () => {
     setSuccess("");
     
     const api = process.env.NEXT_PUBLIC_BACKEND_BASE_API;
-    console.log("API Endpoint:", api);
 
     try {
       const res = await fetch(

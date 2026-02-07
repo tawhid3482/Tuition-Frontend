@@ -21,21 +21,17 @@ export const useFCM = () => {
       try {
         // ✅ User authenticate না হলে FCM initialize করবেন না
         if (!isAuthenticated || !user?.id) {
-          console.log("User not authenticated, skipping FCM initialization");
           return;
         }
 
         if (!messaging) {
-          console.log("Messaging not available");
           return;
         }
 
         // Request notification permission
         const permission = await Notification.requestPermission();
-        console.log("Notification permission:", permission);
         
         if (permission !== "granted") {
-          console.log("Notification permission denied");
           return;
         }
 
@@ -44,9 +40,7 @@ export const useFCM = () => {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
         });
 
-        console.log("FCM Token received:", token);
-        console.log("Current user ID:", user.id);
-
+    
         if (token && user.id) {
           try {
             // ✅ সঠিকভাবে API call করুন
@@ -56,7 +50,6 @@ export const useFCM = () => {
               platform: "web"   // ✅ platform
             }).unwrap();
             
-            console.log("Token saved to backend successfully");
           } catch (apiError: any) {
             console.error("Failed to save token to backend:", apiError);
             if (apiError.data) {
@@ -69,7 +62,6 @@ export const useFCM = () => {
 
         // Handle foreground messages
         onMessage(messaging, (payload) => {
-          console.log("Foreground message received:", payload);
           // এখানে notification show করতে পারেন
           if (payload.notification) {
             new Notification(payload.notification.title || "Notification", {

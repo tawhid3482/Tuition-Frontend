@@ -87,7 +87,7 @@ export default function NotificationBell({
             </div>
           </div>
           
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-96 overflow-y-auto ">
             {notificationsLoading ? (
               <div className="p-4 text-center">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
@@ -95,7 +95,7 @@ export default function NotificationBell({
               </div>
             ) : notifications.length === 0 ? (
               <p className="p-4 text-center text-gray-500">
-                No notifications yet
+                No notifications ye
               </p>
             ) : (
               notifications.slice(0, variant === 'mobile' ? 5 : 10).map((notification) => (
