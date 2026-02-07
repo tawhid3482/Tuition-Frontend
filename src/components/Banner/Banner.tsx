@@ -10,10 +10,10 @@ const BannerPage = () => {
     const [isLottieLoaded, setIsLottieLoaded] = useState(false);
 
     return (
-        <div className="flex items-center justify-center border-2">
-            <div className="flex justify-between gap-6 border-2 border-yellow-600">
+        <div className="flex items-center justify-center">
+            <div className="flex justify-between gap-6 border-yellow-600">
                 {/* left column (always visible) */}
-                <div className="md:px-10 md:py-3.5 space-y-3.5 border-2 border-red-500">
+                <div className="md:px-10 md:py-3.5 space-y-3.5 border-red-500">
                     <h2 className="text-3xl md:text-4xl font-bold">
                         Best <span className="text-primary">
 
@@ -48,7 +48,7 @@ const BannerPage = () => {
                 </div>
 
                 {/* right column */}
-                <div className=" border-2 border-red-500">
+                <div className="border-red-500 border-2">
                     {!isLottieLoaded && <BannerSkeleton />}
 
                     <Lottie
