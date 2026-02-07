@@ -10,7 +10,6 @@
 
 // export default AboutPage;
 
-
 "use client";
 
 import { useTestNotification } from "@/src/hooks/useTestNotification";
@@ -19,11 +18,15 @@ export default function TestNotificationButton() {
   const { sendTestNotification } = useTestNotification();
 
   return (
-    <button
-      onClick={sendTestNotification}
-      className="px-4 py-2 bg-blue-500 text-white rounded"
-    >
-      Send Test Notification
-    </button>
+    <div className="">
+      <button
+        onClick={sendTestNotification}
+        className="px-4 py-2 bg-blue-500 text-white rounded"
+      >
+        Send Test Notification
+      </button>
+
+      {/* <NotificationBell /> */}
+    </div>
   );
 }
