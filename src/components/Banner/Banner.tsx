@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Lottie from "lottie-react";
 import img from "../../app/assets/Teacher.json";
