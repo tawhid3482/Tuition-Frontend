@@ -3,13 +3,13 @@ import React from "react";
 
 const loading = () => {
   return (
-    <div className="w-[90%] mx-auto">
+    <div className="w-64 mx-auto ">
       <Image
-        src="https://i.stack.imgur.com/hzk6C.gif"
-        width={500}
-        height={500}
+        src="https://i.gifer.com/origin/34/34338d26023e5515f6cc8969aa027bca_w200.gif"
+        width={200}
+        height={200}
         alt="loading"
-        className="w-96 mx-auto"
+        className="w-96 mx-auto mt-20"
       />
     </div>
   );
