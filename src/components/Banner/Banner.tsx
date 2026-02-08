@@ -14,11 +14,11 @@ const BannerPage = () => {
     const sliderIntervalRef = useRef(null);
 
     const buttons = [
-        { town: "Dhaka", count: 120 },
-        { town: "Chattogram", count: 85 },
-        { town: "Sylhet", count: 42 },
-        { town: "Rajshahi", count: 33 },
-        { town: "Khulna", count: 58 },
+        { district: "Dhaka", count: 120 },
+        { district: "Chattogram", count: 85 },
+        { district: "Sylhet", count: 42 },
+        { district: "Rajshahi", count: 33 },
+        { district: "Khulna", count: 58 },
     ];
 
     // Auto slide effect for Divisional Tutors
@@ -60,7 +60,7 @@ const BannerPage = () => {
     }, []);
 
     return (
-        <div className="flex justify-center px-4 sm:px-6 lg:px-8 py-6 md:py-0">
+        <div className="flex justify-center px-4 sm:px-6 lg:px-8 py-10">
             <div className="w-full max-w-7xl flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between gap-8 lg:gap-12">
                 {/* LEFT COLUMN */}
                 <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
@@ -105,7 +105,7 @@ const BannerPage = () => {
 
                     {/* CTA BUTTON */}
                     <div className="pt-2">
-                        <button className="flex items-center justify-center gap-2 px-10 py-4 text-lg md:text-xl font-bold rounded-xl border-2 border-primary text-primary bg-white shadow-md transition-all duration-300 transform 
+                        <button className="flex items-center justify-center gap-2 px-12 py-2 text-lg md:text-xl font-bold rounded-xl border-2 border-primary text-primary bg-white shadow-md transition-all duration-300 transform 
             hover:-translate-y-2 hover:scale-105 hover:bg-primary hover:text-white hover:shadow-2xl
             active:translate-y-0 active:scale-100"
                         >
@@ -116,7 +116,7 @@ const BannerPage = () => {
 
                     {/* DIVISIONAL TUTORS SLIDER */}
                     <div className="w-full mt-6">
-                        <h2 className="mb-2 text-lg md:text-xl font-semibold">Divisional Tutors:</h2>
+                        <h2 className="mb-2 text-lg md:text-xl font-semibold">District Tutors:</h2>
                         <div className="relative w-full">
                             {/* Gradient Overlays */}
                             <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
@@ -132,7 +132,7 @@ const BannerPage = () => {
                                         key={index}
                                         className="flex-shrink-0 border border-gray-300 px-6 py-2 rounded-full text-sm md:text-base font-medium hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg transition-all duration-300 active:scale-95 whitespace-nowrap"
                                     >
-                                        {btn.town} ({btn.count})
+                                        {btn.district} ({btn.count})
                                     </button>
                                 ))}
                             </div>
