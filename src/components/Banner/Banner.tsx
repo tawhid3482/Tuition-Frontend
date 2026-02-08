@@ -44,7 +44,7 @@ const BannerPage = () => {
       setTimeout(() => {
         setIsLocationIconMoving(false);
       }, 1000); // Animation duration
-    }, 1000); // Repeat every 3 seconds
+    }, 2500); // Repeat every 3 seconds
 
     // Cleanup
     return () => {
