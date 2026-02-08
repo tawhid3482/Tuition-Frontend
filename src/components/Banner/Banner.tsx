@@ -106,10 +106,10 @@ const BannerPage = () => {
   const districtButtons = getDistrictButtons();
 
   return (
-    <section className="flex justify-center px-4 sm:px-6 lg:px-8 py-10">
+    <section className="flex justify-center px-4 sm:px-6 lg:px-8 py-6 md:py-10">
       <div className="w-full max-w-7xl flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between gap-8 lg:gap-12">
         {/* LEFT COLUMN */}
-        <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
+        <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left md:space-y-6">
           {/* HEADING with SEO-friendly structure */}
           <header className="space-y-3">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
@@ -155,7 +155,7 @@ const BannerPage = () => {
                   <div className="absolute inset-0 animate-ping bg-primary/20 rounded-full"></div>
                 )}
               </div>
-              <h2 className="text-lg sm:text-xl lg:text-2xl text-gray-600 leading-relaxed">
+              <h2 className="text-lg sm:text-xl lg:text-2xl text-gray-600 font-medium leading-relaxed">
                 Find the Right Tutor in Your Area
               </h2>
             </div>
@@ -176,7 +176,7 @@ const BannerPage = () => {
           </div>
 
           {/* DIVISIONAL TUTORS SLIDER */}
-          <div className="w-full mt-6">
+          <div className="w-full mt-3 md:mt-6">
             <h2 className="mb-2 text-lg md:text-xl font-semibold">District Tutors:</h2>
             <div className="relative w-full">
               {/* Gradient Overlays */}
