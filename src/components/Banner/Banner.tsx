@@ -116,11 +116,15 @@ const BannerPage = () => {
 
                         {/* CTA BUTTON */}
                         <div className="pt-2">
-                            <button className="flex items-center justify-center btn px-8 py-3 text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 active:scale-95">
-                                <BiSearchAlt2 />
+                            <button className="flex items-center justify-center gap-2 px-10 py-4 text-lg md:text-xl font-bold rounded-xl border-2 border-primary text-primary bg-white shadow-md transition-all duration-300 transform 
+                            hover:-translate-y-2 hover:scale-105 hover:bg-primary hover:text-white hover:shadow-2xl
+                            active:translate-y-0 active:scale-100"
+                            >
+                                <BiSearchAlt2 className="text-2xl" />
                                 Find a Tutor
                             </button>
                         </div>
+
 
 
                         {/* SLIDING BUTTONS CONTAINER */}
