@@ -76,6 +76,14 @@ import Providers from "@/src/lib/Providers/Providers";
 import { getSettings } from "@/src/lib/api/getSettings";
 import AuthProvider from "../lib/Providers/AuthProvider";
 import FCMProvider from "../lib/Providers/FCMProvider";
+import { Open_Sans } from "next/font/google";
+
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -117,7 +125,8 @@ export default async function RootLayout({
             "--btn-active": settings.btnActive,
           } as React.CSSProperties
         }
-        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
+        // className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
+        className={`${openSans.className} ${geistMono.variable} antialiased`}
       >
         <Providers>
           <AuthProvider>
