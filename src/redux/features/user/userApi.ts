@@ -21,6 +21,16 @@ const authApi = baseApi.injectEndpoints({
       }),
       providesTags: [tagTypes.user],
     }),
+
+    getAllDistrictTutors: builder.query({
+      query: () => ({
+        url: `/user/district-tutors`,
+        method: "GET",
+      }),
+      providesTags: [tagTypes.user],
+    }),
+
+
     getMe: builder.query({
       query: () => ({
         url: `/user/me`,
@@ -31,5 +41,5 @@ const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useSignupUserMutation, useGetAllUserQuery, useGetMeQuery } =
+export const { useSignupUserMutation, useGetAllUserQuery, useGetMeQuery,useGetAllDistrictTutorsQuery } =
   authApi;

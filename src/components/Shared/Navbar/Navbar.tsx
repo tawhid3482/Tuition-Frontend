@@ -8,11 +8,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/redux/store";
 import { useLogOutMutation } from "@/src/redux/features/auth/authApi";
-import { useGetUserNotificationsQuery, useMarkNotificationAsReadMutation } from "@/src/redux/features/notification/notificationApi";
+import {
+  useGetUserNotificationsQuery,
+  useMarkNotificationAsReadMutation,
+} from "@/src/redux/features/notification/notificationApi";
 import {
   Home,
-  User,
-  Briefcase,
   Mail,
   ChevronDown,
   Bell,
@@ -23,6 +24,9 @@ import {
   LogIn,
   Menu,
   X,
+  BriefcaseBusiness,
+  GraduationCap,
+  Send,
 } from "lucide-react";
 import Image from "next/image";
 import Logo from "../../../app/assets/logo.png";
@@ -36,35 +40,41 @@ const navItems = [
     href: "/",
     exact: true,
   },
-  { name: "About", icon: <User className="w-4 h-4" />, href: "/about" },
   {
-    name: "Services",
-    icon: <Briefcase className="w-4 h-4" />,
-    href: "/services",
-    dropdown: [
-      { name: "Web Development", href: "/services/web-development" },
-      { name: "Mobile Apps", href: "/services/mobile-apps" },
-      { name: "UI/UX Design", href: "/services/ui-ux" },
-      { name: "Consulting", href: "/services/consulting" },
-    ],
+    name: "Tuition Jobs",
+    icon: <BriefcaseBusiness className="w-4 h-4" />,
+    href: "/tuition-jobs",
   },
-  { name: "Contact", icon: <Mail className="w-4 h-4" />, href: "/contact" },
+  {
+    name: "Tutors",
+    icon: <GraduationCap className="w-4 h-4" />,
+    href: "/tutors",
+  },
+  {
+    name: "Tutor Request",
+    icon: <Send className="w-4 h-4" />,
+    href: "/tuition-request",
+  },
+
+  // { name: "Contact", icon: <Mail className="w-4 h-4" />, href: "/contact" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  
+
   // State
   const [activeItem, setActiveItem] = useState("Home");
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-  const [bottomDropdownOpen, setBottomDropdownOpen] = useState<string | null>(null);
+  const [bottomDropdownOpen, setBottomDropdownOpen] = useState<string | null>(
+    null,
+  );
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   // Refs
   const searchRef = useRef<HTMLDivElement>(null);
   const bottomDropdownRef = useRef<HTMLDivElement>(null);
@@ -73,11 +83,17 @@ export default function Navbar() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Redux
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth,
+  );
   const [logout] = useLogOutMutation();
 
   // Notification APIs
-  const { data: notificationResponse, refetch: refetchNotifications, isLoading: notificationsLoading } = useGetUserNotificationsQuery(user?.id || "", {
+  const {
+    data: notificationResponse,
+    refetch: refetchNotifications,
+    isLoading: notificationsLoading,
+  } = useGetUserNotificationsQuery(user?.id || "", {
     skip: !user?.id,
     pollingInterval: 60000,
   });
@@ -87,21 +103,21 @@ export default function Navbar() {
   // Extract notifications
   const notifications = (() => {
     if (!notificationResponse) return [];
-    
+
     if (Array.isArray(notificationResponse)) {
       return notificationResponse;
     }
-    
+
     if (notificationResponse.data && Array.isArray(notificationResponse.data)) {
       return notificationResponse.data;
     }
-    
+
     for (const key in notificationResponse) {
       if (Array.isArray(notificationResponse[key])) {
         return notificationResponse[key];
       }
     }
-    
+
     return [];
   })();
 
@@ -248,11 +264,14 @@ export default function Navbar() {
   };
 
   // Handle notification click
-  const handleNotificationClick = async (notificationId: string, e?: React.MouseEvent) => {
+  const handleNotificationClick = async (
+    notificationId: string,
+    e?: React.MouseEvent,
+  ) => {
     if (e) {
       e.stopPropagation();
     }
-    
+
     try {
       await markAsRead(notificationId).unwrap();
       refetchNotifications();
@@ -264,7 +283,7 @@ export default function Navbar() {
   // Mark all as read
   const handleMarkAllAsRead = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     try {
       const unreadIds = unreadNotifications.map((n: any) => n.id || n._id);
       for (const id of unreadIds) {
@@ -286,7 +305,7 @@ export default function Navbar() {
           setProfileDropdownOpen(false);
         }}
         className="relative p-2 text-gray-600 hover:text-primary rounded-full hover:bg-primary/5 transition-all duration-200 "
-        aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
+        aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ""}`}
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -317,7 +336,7 @@ export default function Navbar() {
               </button>
             </div>
           </div>
-          
+
           <div className="max-h-64 -left-64 ">
             {notificationsLoading ? (
               <div className="p-4 text-center ">
@@ -335,25 +354,35 @@ export default function Navbar() {
                   className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${
                     !notification.isRead ? "bg-blue-50" : ""
                   }`}
-                  onClick={(e) => handleNotificationClick(notification.id || notification._id, e)}
+                  onClick={(e) =>
+                    handleNotificationClick(
+                      notification.id || notification._id,
+                      e,
+                    )
+                  }
                 >
                   <h4 className="font-medium text-sm">
-                    {notification.notification?.title || notification.title || "Notification"}
+                    {notification.notification?.title ||
+                      notification.title ||
+                      "Notification"}
                   </h4>
                   <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                    {notification.notification?.message || 
-                     notification.message || 
-                     notification.body || 
-                     "No message"}
+                    {notification.notification?.message ||
+                      notification.message ||
+                      notification.body ||
+                      "No message"}
                   </p>
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-xs text-gray-500">
-                      {notification.createdAt ? 
-                        new Date(notification.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric'
-                        }) : 
-                        "Recently"}
+                      {notification.createdAt
+                        ? new Date(notification.createdAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                            },
+                          )
+                        : "Recently"}
                     </span>
                     {!notification.isRead && (
                       <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
@@ -365,7 +394,7 @@ export default function Navbar() {
               ))
             )}
           </div>
-          
+
           {notifications.length > 0 && (
             <div className="p-3 border-t">
               <Link
@@ -392,7 +421,7 @@ export default function Navbar() {
           setDropdownOpen(null);
         }}
         className="relative p-2 text-gray-600 hover:text-primary rounded-full hover:bg-primary/5 transition-all duration-200 group"
-        aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
+        aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ""}`}
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -423,12 +452,14 @@ export default function Navbar() {
               </button>
             </div>
           </div>
-          
+
           <div className="max-h-96 overflow-y-auto">
             {notificationsLoading ? (
               <div className="p-4 text-center">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                <p className="text-sm text-gray-500 mt-2">Loading notifications...</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Loading notifications...
+                </p>
               </div>
             ) : notifications.length === 0 ? (
               <p className="p-4 text-center text-gray-500">
@@ -441,27 +472,37 @@ export default function Navbar() {
                   className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${
                     !notification.isRead ? "bg-blue-50" : ""
                   }`}
-                  onClick={(e) => handleNotificationClick(notification.id || notification._id, e)}
+                  onClick={(e) =>
+                    handleNotificationClick(
+                      notification.id || notification._id,
+                      e,
+                    )
+                  }
                 >
                   <h4 className="font-medium">
-                    {notification.notification?.title || notification.title || "Notification"}
+                    {notification.notification?.title ||
+                      notification.title ||
+                      "Notification"}
                   </h4>
                   <p className="text-sm text-gray-600 mt-1">
-                    {notification.notification?.message || 
-                     notification.message || 
-                     notification.body || 
-                     "No message"}
+                    {notification.notification?.message ||
+                      notification.message ||
+                      notification.body ||
+                      "No message"}
                   </p>
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-xs text-gray-500">
-                      {notification.createdAt ? 
-                        new Date(notification.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        }) : 
-                        "Recently"}
+                      {notification.createdAt
+                        ? new Date(notification.createdAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )
+                        : "Recently"}
                     </span>
                     {!notification.isRead && (
                       <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded animate-pulse">
@@ -473,7 +514,7 @@ export default function Navbar() {
               ))
             )}
           </div>
-          
+
           {notifications.length > 0 && (
             <div className="p-3 border-t">
               <Link
@@ -699,7 +740,9 @@ export default function Navbar() {
                           onClick={() => setProfileDropdownOpen(false)}
                         >
                           <Bell className="w-4 h-4 mr-3" />
-                          <span className="font-medium text-sm">All Notifications</span>
+                          <span className="font-medium text-sm">
+                            All Notifications
+                          </span>
                           {unreadCount > 0 && (
                             <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                               {unreadCount}
@@ -732,9 +775,7 @@ export default function Navbar() {
             {/* Mobile Top Right (Search, Notification, Menu) */}
             <div className="flex items-center space-x-2 md:hidden">
               {/* Mobile Notification Bell - Only show if authenticated */}
-              {isAuthenticated && (
-                <MobileNotificationBell />
-              )}
+              {isAuthenticated && <MobileNotificationBell />}
 
               {/* Mobile Search Button */}
               <button
@@ -864,8 +905,6 @@ export default function Navbar() {
             </div>
           ))}
 
-      
-
           {/* Mobile Bottom Profile/Login Button */}
           <div className="relative flex-1" ref={bottomDropdownRef}>
             {isAuthenticated ? (
@@ -929,13 +968,18 @@ export default function Navbar() {
                     <div
                       className="px-4 py-2"
                       onClick={() => {
-                        handleMobileNavigation("/notifications", "Notifications");
+                        handleMobileNavigation(
+                          "/notifications",
+                          "Notifications",
+                        );
                         setBottomDropdownOpen(null);
                       }}
                     >
                       <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1.5">
                         <Bell className="w-4 h-4 mr-2" />
-                        <span className="font-medium text-sm">All Notifications</span>
+                        <span className="font-medium text-sm">
+                          All Notifications
+                        </span>
                         {unreadCount > 0 && (
                           <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                             {unreadCount}
@@ -1023,7 +1067,7 @@ export default function Navbar() {
                       {user?.role?.replace(/_/g, " ") || "User"}
                     </p>
                   </div>
-                  <button 
+                  <button
                     className="p-1.5 text-gray-600 hover:text-primary relative"
                     onClick={() => setNotificationOpen(!notificationOpen)}
                   >
@@ -1056,7 +1100,9 @@ export default function Navbar() {
                       <>
                         <button
                           onClick={() => {
-                            setDropdownOpen(dropdownOpen === item.name ? null : item.name);
+                            setDropdownOpen(
+                              dropdownOpen === item.name ? null : item.name,
+                            );
                           }}
                           className={`flex items-center justify-between w-full px-3 py-3 rounded-lg transition-all duration-200 ${
                             isActive(item.name)
@@ -1070,7 +1116,9 @@ export default function Navbar() {
                             >
                               {item.icon}
                             </div>
-                            <span className="font-medium text-sm">{item.name}</span>
+                            <span className="font-medium text-sm">
+                              {item.name}
+                            </span>
                           </div>
                           <ChevronDown
                             className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${dropdownOpen === item.name ? "rotate-180" : ""}`}
@@ -1085,7 +1133,10 @@ export default function Navbar() {
                                 key={subItem.name}
                                 className="px-3 py-2"
                                 onClick={() => {
-                                  handleMobileNavigation(subItem.href, item.name);
+                                  handleMobileNavigation(
+                                    subItem.href,
+                                    item.name,
+                                  );
                                   setIsMobileMenuOpen(false);
                                 }}
                               >
@@ -1118,7 +1169,9 @@ export default function Navbar() {
                           >
                             {item.icon}
                           </div>
-                          <span className="font-medium text-sm">{item.name}</span>
+                          <span className="font-medium text-sm">
+                            {item.name}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -1130,14 +1183,18 @@ export default function Navbar() {
               {isAuthenticated && (
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <div
-                    onClick={() => handleMobileNavigation("/dashboard", "Dashboard")}
+                    onClick={() =>
+                      handleMobileNavigation("/dashboard", "Dashboard")
+                    }
                     className="w-full bg-primary text-white px-3 py-2.5 rounded-lg hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow flex items-center justify-center space-x-2 mb-2 cursor-pointer"
                   >
                     <LayoutDashboard className="w-4 h-4" />
                     <span>Dashboard</span>
                   </div>
                   <div
-                    onClick={() => handleMobileNavigation("/notifications", "Notifications")}
+                    onClick={() =>
+                      handleMobileNavigation("/notifications", "Notifications")
+                    }
                     className="w-full border border-primary text-primary px-3 py-2.5 rounded-lg hover:bg-primary/5 transition-all duration-200 font-medium text-sm flex items-center justify-center space-x-2 mb-2 cursor-pointer"
                   >
                     <Bell className="w-4 h-4" />
