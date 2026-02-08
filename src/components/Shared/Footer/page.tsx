@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Logo from "../../../app/assets/logo.png";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaEnvelope, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import Link from "next/link";
 
 const Footer = () => {
   return (
@@ -32,18 +33,18 @@ const Footer = () => {
 
               {/* Social Media Links */}
               <div className="flex space-x-4 pt-2">
-                <a href="#" className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all duration-300 hover:scale-110">
+                <Link href="#" className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all duration-300 hover:scale-110">
                   <FaFacebook className="text-lg" />
-                </a>
-                <a href="#" className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all duration-300 hover:scale-110">
+                </Link>
+                <Link href="#" className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all duration-300 hover:scale-110">
                   <FaTwitter className="text-lg" />
-                </a>
-                <a href="#" className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all duration-300 hover:scale-110">
+                </Link>
+                <Link href="#" className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all duration-300 hover:scale-110">
                   <FaInstagram className="text-lg" />
-                </a>
-                <a href="#" className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all duration-300 hover:scale-110">
+                </Link>
+                <Link href="#" className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all duration-300 hover:scale-110">
                   <FaLinkedin className="text-lg" />
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -51,18 +52,18 @@ const Footer = () => {
             <nav className="space-y-4">
               <h6 className="footer-title text-xl font-semibold text-secondary border-l-4 border-accent pl-3">Services</h6>
               <div className="space-y-3">
-                <a href="/tuition-jobs" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
+                <Link href="/tuition-jobs" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   Tuition Jobs
-                </a>
-                <a href="/tutors" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
+                </Link>
+                <Link href="/tutors" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   Tutors
-                </a>
-                <a href="/tuition-request" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
+                </Link>
+                <Link href="/tuition-request" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   Tuition Request
-                </a>
+                </Link>
               </div>
             </nav>
 
@@ -70,18 +71,18 @@ const Footer = () => {
             <nav className="space-y-4">
               <h6 className="footer-title text-xl font-semibold text-secoendary border-l-4 border-accent pl-3">Company</h6>
               <div className="space-y-3">
-                <a href="/about" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
+                <Link href="/about" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   About us
-                </a>
-                <a href="/contact" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
+                </Link>
+                <Link href="/contact" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-secoendary mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   Contact
-                </a>
-                <a href="/careers" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
+                </Link>
+                <Link href="/careers" className="link link-hover flex items-center group transition-all duration-300 hover:translate-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   Careers
-                </a>
+                </Link>
 
               </div>
             </nav>
@@ -109,9 +110,9 @@ const Footer = () => {
               <nav>
                 <h6 className="footer-title text-xl font-semibold text-accent border-l-4 border-accent pl-3">Legal</h6>
                 <div className="space-x-3 mt-3 ">
-                  <a href="/terms" className="link link-hover text-sm">Terms of use</a>
-                  <a href="/privacy" className="link link-hover text-sm">Privacy policy</a>
-                  <a href="/cookie" className="link link-hover text-sm">Cookie policy</a>
+                  <Link href="/terms" className="link link-hover text-sm">Terms of use</Link>
+                  <Link href="/privacy" className="link link-hover text-sm">Privacy policy</Link>
+                  <Link href="/cookie" className="link link-hover text-sm">Cookie policy</Link>
                 </div>
               </nav>
             </div>
