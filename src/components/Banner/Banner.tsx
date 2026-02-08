@@ -112,7 +112,7 @@ const BannerPage = () => {
         <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
           {/* HEADING with SEO-friendly structure */}
           <header className="space-y-3">
-            <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
               Best{" "}
               <span className="text-primary">
                 <TypeAnimation
