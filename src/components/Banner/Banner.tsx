@@ -106,7 +106,7 @@ const BannerPage = () => {
   const districtButtons = getDistrictButtons();
 
   return (
-    <section className="flex justify-center px-4 sm:px-6 lg:px-8 py-6 md:py-0">
+    <section className="flex justify-center px-4 sm:px-6 md:px-0 py-6 md:py-0">
       <div className="w-full max-w-7xl flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between gap-8 lg:gap-12">
         {/* LEFT COLUMN */}
         <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left md:space-y-6 md:mt-20">
