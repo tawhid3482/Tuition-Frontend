@@ -1,61 +1,165 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Lottie from "lottie-react";
 import img from "../../app/assets/Teacher.json";
 import BannerSkeleton from "./BannerSkeletion";
-import { TypeAnimation } from 'react-type-animation';
+import { TypeAnimation } from "react-type-animation";
+import { CiLocationOn } from "react-icons/ci";
+import { BiSearchAlt2 } from "react-icons/bi";
 
 const BannerPage = () => {
     const [isLottieLoaded, setIsLottieLoaded] = useState(false);
+    const sliderRef = useRef(null);
+    const sliderIntervalRef = useRef(null);
+
+    const buttons = [
+        { town: "Dhaka", count: 120 },
+        { town: "Chattogram", count: 85 },
+        { town: "Sylhet", count: 42 },
+        { town: "Rajshahi", count: 33 },
+        { town: "Khulna", count: 58 },
+    ];
+
+    // Auto slide effect for Divisional Tutors
+    useEffect(() => {
+        const slider = sliderRef.current;
+        if (!slider) return;
+
+        const startAutoSlide = () => {
+            sliderIntervalRef.current = setInterval(() => {
+                if (!slider) return;
+
+                const isAtEnd =
+                    slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 10;
+
+                if (isAtEnd) {
+                    slider.scrollTo({ left: 0, behavior: "smooth" });
+                } else {
+                    slider.scrollBy({ left: 140, behavior: "smooth" });
+                }
+            }, 1500);
+        };
+
+        startAutoSlide();
+
+        // Pause on hover
+        const handleMouseEnter = () => {
+            if (sliderIntervalRef.current) clearInterval(sliderIntervalRef.current);
+        };
+        const handleMouseLeave = () => startAutoSlide();
+
+        slider.addEventListener("mouseenter", handleMouseEnter);
+        slider.addEventListener("mouseleave", handleMouseLeave);
+
+        return () => {
+            if (sliderIntervalRef.current) clearInterval(sliderIntervalRef.current);
+            slider.removeEventListener("mouseenter", handleMouseEnter);
+            slider.removeEventListener("mouseleave", handleMouseLeave);
+        };
+    }, []);
 
     return (
-        <div className="flex items-center justify-center">
-            <div className="flex justify-between gap-6 border-yellow-600">
-                {/* left column (always visible) */}
-                <div className="md:px-10 md:py-3.5 space-y-3.5 border-red-500">
-                    <h2 className="text-3xl md:text-4xl font-bold">
-                        Best <span className="text-primary">
+        <div className="flex justify-center px-4 sm:px-6 lg:px-8 py-6 md:py-0">
+            <div className="w-full max-w-7xl flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between gap-8 lg:gap-12">
+                {/* LEFT COLUMN */}
+                <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
+                    {/* HEADING */}
+                    <div className="space-y-4">
+                        <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold leading-tight">
+                            Best{" "}
+                            <span className="text-primary">
+                                <TypeAnimation
+                                    className="bg-primary bg-clip-text text-transparent font-semibold"
+                                    sequence={[
+                                        "Tutoring Platform",
+                                        1500,
+                                        "",
+                                        400,
+                                        "Verified Tutors",
+                                        1500,
+                                        "",
+                                        400,
+                                        "Learning Experience",
+                                        1500,
+                                        "",
+                                        400,
+                                    ]}
+                                    speed={20}
+                                    repeat={Infinity}
+                                    wrapper="span"
+                                />
+                            </span>
+                            <br />
+                            for Home & Online Tuitions
+                        </h1>
 
-                            <TypeAnimation
-                                className="bg-primary bg-clip-text text-transparent font-semibold"
-                                sequence={[
-                                    "Tutoring Platform",
-                                    1500,
-                                    "",
-                                    400,
-                                    "Verified Tutors",
-                                    1500,
-                                    "",
-                                    400,
-                                    "Learning Experience",
-                                    1500,
-                                    "",
-                                    400,
-                                ]}
-                                speed={50}
-                                repeat={Infinity}
-                                wrapper="span"
-                            />
+                        {/* SUBTITLE */}
+                        <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 pt-2">
+                            <CiLocationOn className="text-2xl text-gray-600 mt-0.5" />
+                            <h2 className="text-lg sm:text-xl lg:text-2xl text-gray-600 leading-relaxed">
+                                Find the Right Tutor in Your Area
+                            </h2>
+                        </div>
+                    </div>
 
+                    {/* CTA BUTTON */}
+                    <div className="pt-2">
+                        <button className="flex items-center justify-center gap-2 px-10 py-4 text-lg md:text-xl font-bold rounded-xl border-2 border-primary text-primary bg-white shadow-md transition-all duration-300 transform 
+            hover:-translate-y-2 hover:scale-105 hover:bg-primary hover:text-white hover:shadow-2xl
+            active:translate-y-0 active:scale-100"
+                        >
+                            <BiSearchAlt2 className="text-2xl" />
+                            Find a Tutor
+                        </button>
+                    </div>
 
-                        </span> <br />
-                        for Home & Online Tuitions
-                    </h2>
-                    <h3 className="text-xl md:text-2xl">
-                        Find the Right Tutor in Your Area
-                    </h3>
+                    {/* DIVISIONAL TUTORS SLIDER */}
+                    <div className="w-full mt-6">
+                        <h2 className="mb-2 text-lg md:text-xl font-semibold">Divisional Tutors:</h2>
+                        <div className="relative w-full">
+                            {/* Gradient Overlays */}
+                            <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+                            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+
+                            {/* Sliding Buttons */}
+                            <div
+                                ref={sliderRef}
+                                className="slider flex gap-3 lg:gap-4 overflow-x-auto py-3 px-1 scroll-smooth"
+                            >
+                                {[...buttons, ...buttons].map((btn, index) => (
+                                    <button
+                                        key={index}
+                                        className="flex-shrink-0 border border-gray-300 px-6 py-2 rounded-full text-sm md:text-base font-medium hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg transition-all duration-300 active:scale-95 whitespace-nowrap"
+                                    >
+                                        {btn.town} ({btn.count})
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Hide Scrollbar */}
+                        <style jsx>{`
+              .slider {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+              .slider::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+                    </div>
                 </div>
 
-                {/* right column */}
-                <div className="border-red-500 border-2">
+                {/* RIGHT COLUMN - LOTTIE */}
+                <div className="w-full md:w-1/2 flex justify-center items-center mt-6 md:mt-0">
                     {!isLottieLoaded && <BannerSkeleton />}
-
                     <Lottie
                         animationData={img}
-                        loop
+                        loop={true}
                         onDOMLoaded={() => setIsLottieLoaded(true)}
-                        className={isLottieLoaded ? "block" : "hidden"}
+                        className={`${isLottieLoaded ? "block" : "hidden"
+                            } w-full h-auto max-h-[400px] lg:max-h-[500px] xl:max-h-[600px] transition-opacity duration-500`}
                     />
                 </div>
             </div>
