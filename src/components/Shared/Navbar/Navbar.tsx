@@ -14,7 +14,6 @@ import {
 } from "@/src/redux/features/notification/notificationApi";
 import {
   Home,
-  Mail,
   ChevronDown,
   Bell,
   Search,
@@ -33,7 +32,15 @@ import Logo from "../../../app/assets/logo.png";
 import Link from "next/link";
 
 // Nav items configuration
-const navItems = [
+interface NavItem {
+  name: string;
+  icon: React.ReactNode;
+  href: string;
+  exact?: boolean;
+  dropdown?: { name: string; href: string }[];
+}
+
+const navItems: NavItem[] = [
   {
     name: "Home",
     icon: <Home className="w-4 h-4" />,
