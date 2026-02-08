@@ -106,10 +106,10 @@ const BannerPage = () => {
   const districtButtons = getDistrictButtons();
 
   return (
-    <section className="flex justify-center px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+    <section className="flex justify-center px-4 sm:px-6 lg:px-8 py-6 md:py-0">
       <div className="w-full max-w-7xl flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between gap-8 lg:gap-12">
         {/* LEFT COLUMN */}
-        <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left md:space-y-6">
+        <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left md:space-y-6 md:mt-20">
           {/* HEADING with SEO-friendly structure */}
           <header className="space-y-3">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
@@ -238,7 +238,7 @@ const BannerPage = () => {
         </div>
 
         {/* RIGHT COLUMN - LOTTIE */}
-        <div className="w-full md:w-1/2 flex justify-center items-center mt-6 md:mt-0">
+        <div className="w-full md:w-1/2 flex justify-center items-center">
           {!isLottieLoaded && <BannerSkeleton />}
           <Lottie
             animationData={img}
