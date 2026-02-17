@@ -3,17 +3,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  LogIn,
-  User,
-  CheckCircle,
-  XCircle,
-  Loader2,
-} from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, LogIn, User, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
@@ -332,7 +322,7 @@ const Login = () => {
                       <button
                         type="button"
                         onClick={handleForgotPassword}
-                        className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                        className="text-xs font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
                       >
                         Forgot password?
                       </button>

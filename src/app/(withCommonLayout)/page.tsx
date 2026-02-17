@@ -1,12 +1,11 @@
-import BannerPage from "@/src/components/Banner/Banner";
-import DetailsCounter from "@/src/components/DetailsCounter/DetailsCounter";
+import { bannerSlides } from "@/public/banner";
+import Banner from "@/src/components/Banner/Banner";
 
 export default async function HomePage() {
 
   return (
     <div className="">
-      <BannerPage />
-      <DetailsCounter />
+      <Banner slides={bannerSlides} autoPlayInterval={6000} />
     </div>
   );
 };

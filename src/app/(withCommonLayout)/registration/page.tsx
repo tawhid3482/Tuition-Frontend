@@ -22,11 +22,13 @@ import {
 } from "lucide-react";
 import { useSignupUserMutation } from "@/src/redux/features/user/userApi";
 import { useLoginUserMutation } from "@/src/redux/features/auth/authApi";
+import toast from "react-hot-toast";
+
+const image_hosting_key = process.env.NEXT_PUBLIC_IMAGE_HOSTING_KEY;
+const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
 
 const RegistrationPage = () => {
   const router = useRouter();
-
-  // State
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -68,19 +70,19 @@ const RegistrationPage = () => {
   const validatePhone = (phone: string) => {
     if (!phone) return "Phone number is required";
     // Simple phone validation (at least 10 digits, optional +)
-    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{4,10}$/;
+    const phoneRegex =
+      /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{4,10}$/;
     if (!phoneRegex.test(phone)) return "Please enter a valid phone number";
     return "";
   };
 
   // Input handler for text fields
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
 
     if (errors[name]) {
@@ -97,7 +99,38 @@ const RegistrationPage = () => {
     }
   };
 
-  // Submit handler (just console.log)
+  // Upload image to imgBB
+  const uploadImageToImgBB = async (file: File): Promise<string | null> => {
+    const imageFormData = new FormData();
+    imageFormData.append("image", file);
+
+    try {
+      const response = await fetch(image_hosting_api, {
+        method: "POST",
+        body: imageFormData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        return data.data.url;
+      } else {
+        throw new Error(data.error?.message || "Image upload failed");
+      }
+    } catch (error: unknown) {
+      let errorMessage = "Failed to upload image";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === "string") {
+        errorMessage = error;
+      }
+      toast.error(errorMessage);
+      return null;
+    }
+  };
+
+
+  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -112,7 +145,9 @@ const RegistrationPage = () => {
     const emailError = validateEmail(formData.email);
     if (emailError) newErrors.email = emailError;
 
-    const confirmPasswordError = validateConfirmPassword(formData.confirmPassword);
+    const confirmPasswordError = validateConfirmPassword(
+      formData.confirmPassword
+    );
     if (confirmPasswordError) newErrors.confirmPassword = confirmPasswordError;
 
     const phoneError = validatePhone(formData.phone);
@@ -123,26 +158,66 @@ const RegistrationPage = () => {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       Object.values(newErrors).forEach((error) => {
-        // Use alert for simplicity, but you could also show a toast
-        alert(error);
+        toast.error(error);
       });
       setIsLoading(false);
       return;
     }
 
-    // Prepare data object for console
-    const submissionData = {
+    // Upload avatar if present
+    let avatarUrl = null;
+    if (formData.avatar) {
+      const uploadToast = toast.loading("Uploading profile picture...");
+      avatarUrl = await uploadImageToImgBB(formData.avatar);
+      toast.dismiss(uploadToast);
+
+      if (!avatarUrl) {
+        setIsLoading(false);
+        return; // Stop if upload failed
+      }
+    }
+
+    // Prepare data for registration
+    const registrationData = {
       name: formData.name,
       email: formData.email,
       password: formData.password,
       phone: formData.phone,
-      avatar: formData.avatar ? formData.avatar.name : null,
+      avatar: avatarUrl, // Will be null if no image uploaded
     };
 
-    console.log("Form submitted:", submissionData);
-    registerUser(submissionData);
+    console.log("Registration data:", registrationData);
 
-    setIsLoading(false);
+    // Call signup mutation
+    const loadingToast = toast.loading("Creating account...");
+    try {
+      const res = await registerUser(registrationData).unwrap();
+
+      toast.dismiss(loadingToast);
+
+      if (res?.success) {
+        toast.success("Account created successfully!");
+
+        // Auto login
+        const loginPayload = {
+          email: registrationData.email,
+          password: registrationData.password,
+        };
+        await loginUser(loginPayload).unwrap();
+
+        toast.success("Logged in successfully! Redirecting...");
+        router.push("/");
+      } else {
+        toast.error(res?.message || "Registration failed");
+      }
+    } catch (err: any) {
+      toast.dismiss(loadingToast);
+      const errorMessage =
+        err?.data?.message || err?.message || "Registration failed";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -428,14 +503,18 @@ const RegistrationPage = () => {
                           : "border-gray-300 focus:ring-primary focus:border-primary"
                           } focus:outline-none focus:ring-1 transition-all duration-200`}
                         placeholder="••••••••"
-                        aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
+                        aria-describedby={
+                          errors.confirmPassword ? "confirm-password-error" : undefined
+                        }
                         aria-invalid={!!errors.confirmPassword}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                        aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                        aria-label={
+                          showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+                        }
                         aria-pressed={showConfirmPassword}
                       >
                         {showConfirmPassword ? (
