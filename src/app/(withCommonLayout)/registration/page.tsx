@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -19,6 +20,8 @@ import {
   Phone,
   Camera,
 } from "lucide-react";
+import { useSignupUserMutation } from "@/src/redux/features/user/userApi";
+import { useLoginUserMutation } from "@/src/redux/features/auth/authApi";
 
 const RegistrationPage = () => {
   const router = useRouter();
@@ -27,6 +30,8 @@ const RegistrationPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registerUser] = useSignupUserMutation();
+  const [loginUser] = useLoginUserMutation();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -51,14 +56,6 @@ const RegistrationPage = () => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) return "Email is required";
     if (!re.test(email)) return "Please enter a valid email";
-    return "";
-  };
-
-  const validatePassword = (password: string) => {
-    if (!password) return "Password is required";
-    if (password.length < 6) return "Password must be at least 6 characters";
-    if (!/(?=.*[A-Za-z])(?=.*\d)/.test(password))
-      return "Password must contain letters and numbers";
     return "";
   };
 
@@ -115,9 +112,6 @@ const RegistrationPage = () => {
     const emailError = validateEmail(formData.email);
     if (emailError) newErrors.email = emailError;
 
-    const passwordError = validatePassword(formData.password);
-    if (passwordError) newErrors.password = passwordError;
-
     const confirmPasswordError = validateConfirmPassword(formData.confirmPassword);
     if (confirmPasswordError) newErrors.confirmPassword = confirmPasswordError;
 
@@ -142,11 +136,11 @@ const RegistrationPage = () => {
       email: formData.email,
       password: formData.password,
       phone: formData.phone,
-      avatar: formData.avatar ? formData.avatar.name : null, // Just log file name for demo
+      avatar: formData.avatar ? formData.avatar.name : null,
     };
 
     console.log("Form submitted:", submissionData);
-    alert("Check console for form data");
+    registerUser(submissionData);
 
     setIsLoading(false);
   };
@@ -255,8 +249,8 @@ const RegistrationPage = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${errors.name
-                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-primary focus:border-primary"
                           } focus:outline-none focus:ring-1 transition-all duration-200`}
                         placeholder="John Doe"
                         aria-describedby={errors.name ? "name-error" : undefined}
@@ -296,8 +290,8 @@ const RegistrationPage = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${errors.email
-                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-primary focus:border-primary"
                           } focus:outline-none focus:ring-1 transition-all duration-200`}
                         placeholder="you@example.com"
                         aria-describedby={errors.email ? "email-error" : undefined}
@@ -337,8 +331,8 @@ const RegistrationPage = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${errors.phone
-                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-primary focus:border-primary"
                           } focus:outline-none focus:ring-1 transition-all duration-200`}
                         placeholder="+1234567890"
                         aria-describedby={errors.phone ? "phone-error" : undefined}
@@ -377,8 +371,8 @@ const RegistrationPage = () => {
                         value={formData.password}
                         onChange={handleInputChange}
                         className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg text-black border ${errors.password
-                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-primary focus:border-primary"
                           } focus:outline-none focus:ring-1 transition-all duration-200`}
                         placeholder="••••••••"
                         aria-describedby={errors.password ? "password-error" : undefined}
@@ -430,8 +424,8 @@ const RegistrationPage = () => {
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
                         className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg text-black border ${errors.confirmPassword
-                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-primary focus:border-primary"
                           } focus:outline-none focus:ring-1 transition-all duration-200`}
                         placeholder="••••••••"
                         aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
