@@ -39,7 +39,7 @@ const BannerPage = () => {
     // Start animation interval
     locationAnimationRef.current = setInterval(() => {
       setIsLocationIconMoving(true);
-      
+
       // Reset after animation completes
       setTimeout(() => {
         setIsLocationIconMoving(false);
@@ -144,10 +144,9 @@ const BannerPage = () => {
             {/* SUBTITLE with animated CiLocationOn */}
             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 pt-1">
               <div className="relative">
-                <CiLocationOn 
-                  className={`text-2xl text-primary font-bold mt-0.5 transition-all duration-1000 ease-in-out ${
-                    isLocationIconMoving ? "-translate-y-2" : "translate-y-0"
-                  }`}
+                <CiLocationOn
+                  className={`text-2xl text-primary font-bold mt-0.5 transition-all duration-1000 ease-in-out ${isLocationIconMoving ? "-translate-y-2" : "translate-y-0"
+                    }`}
                   aria-hidden="true"
                 />
                 {/* Optional pulse effect */}
@@ -180,12 +179,12 @@ const BannerPage = () => {
             <h2 className="mb-2 text-lg md:text-xl font-semibold">District Tutors:</h2>
             <div className="relative w-full">
               {/* Gradient Overlays */}
-              <div 
-                className="absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r from-white to-transparent z-10 pointer-events-none" 
+              <div
+                className="absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r from-white to-transparent z-10 pointer-events-none"
                 aria-hidden="true"
               />
-              <div 
-                className="absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l from-white to-transparent z-10 pointer-events-none" 
+              <div
+                className="absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l from-white to-transparent z-10 pointer-events-none"
                 aria-hidden="true"
               />
 

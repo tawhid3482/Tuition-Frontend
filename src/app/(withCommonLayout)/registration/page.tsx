@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
@@ -16,75 +16,28 @@ import {
   XCircle,
   Loader2,
   ArrowLeft,
-  ShieldCheck,
+  Phone,
+  Camera,
 } from "lucide-react";
-import toast from "react-hot-toast";
-import {
-  useSendOtpMutation,
-  useVerifyOtpMutation,
-  useResendOtpMutation,
-  useLoginUserMutation,
-} from "@/src/redux/features/auth/authApi";
-import { useSignupUserMutation } from "@/src/redux/features/user/userApi";
 
 const RegistrationPage = () => {
   const router = useRouter();
 
-  // Redux mutations
-  const [createUsers] = useSignupUserMutation();
-  const [sendOtp] = useSendOtpMutation();
-  const [verifyOtp] = useVerifyOtpMutation();
-  const [resendOtp] = useResendOtpMutation();
-  const [loginUser] = useLoginUserMutation();
-
   // State
-  const [role, setRole] = useState<"STUDENT" | "TUTOR">("TUTOR");
-  const [step, setStep] = useState<"form" | "otp">("form");
   const [isLoading, setIsLoading] = useState(false);
-  const [otp, setOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [otpSentTime, setOtpSentTime] = useState<number | null>(null);
-  const [canResendOtp, setCanResendOtp] = useState(true);
-  const [countdown, setCountdown] = useState(0);
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    gender: "",
-    acceptTerms: false,
+    phone: "",
+    avatar: null as File | null,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Countdown timer effect
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (otpSentTime && !canResendOtp) {
-      const updateCountdown = () => {
-        const elapsed = Date.now() - otpSentTime;
-        const remaining = Math.max(0, 30000 - elapsed);
-        const seconds = Math.ceil(remaining / 1000);
-        
-        setCountdown(seconds);
-        
-        if (seconds <= 0) {
-          setCanResendOtp(true);
-        } else {
-          timer = setTimeout(updateCountdown, 1000);
-        }
-      };
-      
-      updateCountdown();
-    }
-    
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [otpSentTime, canResendOtp]);
 
   // Validation functions
   const validateName = (name: string) => {
@@ -115,21 +68,22 @@ const RegistrationPage = () => {
     return "";
   };
 
-  const validateGender = (gender: string) => {
-    if (!gender) return "Gender is required";
+  const validatePhone = (phone: string) => {
+    if (!phone) return "Phone number is required";
+    // Simple phone validation (at least 10 digits, optional +)
+    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{4,10}$/;
+    if (!phoneRegex.test(phone)) return "Please enter a valid phone number";
     return "";
   };
 
-  // Input handler
+  // Input handler for text fields
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
 
     if (errors[name]) {
@@ -137,15 +91,16 @@ const RegistrationPage = () => {
     }
   };
 
-  // Handle role selection
-  const handleRoleSelect = (selectedRole: "STUDENT" | "TUTOR") => {
-    setRole(selectedRole);
-    if (errors.role) {
-      setErrors((prev) => ({ ...prev, role: "" }));
+  // File input handler for avatar
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, avatar: file }));
+    if (errors.avatar) {
+      setErrors((prev) => ({ ...prev, avatar: "" }));
     }
   };
 
-  // Submit (Send OTP)
+  // Submit handler (just console.log)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -163,287 +118,37 @@ const RegistrationPage = () => {
     const passwordError = validatePassword(formData.password);
     if (passwordError) newErrors.password = passwordError;
 
-    const confirmPasswordError = validateConfirmPassword(
-      formData.confirmPassword,
-    );
+    const confirmPasswordError = validateConfirmPassword(formData.confirmPassword);
     if (confirmPasswordError) newErrors.confirmPassword = confirmPasswordError;
 
-    const genderError = validateGender(formData.gender);
-    if (genderError) newErrors.gender = genderError;
+    const phoneError = validatePhone(formData.phone);
+    if (phoneError) newErrors.phone = phoneError;
 
-    if (!formData.acceptTerms) {
-      newErrors.acceptTerms = "You must accept the terms & conditions";
-    }
+    // Avatar is optional, so no validation needed
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       Object.values(newErrors).forEach((error) => {
-        toast.error(error);
+        // Use alert for simplicity, but you could also show a toast
+        alert(error);
       });
       setIsLoading(false);
       return;
     }
 
-    const loadingToast = toast.loading("Sending OTP to your email...");
+    // Prepare data object for console
+    const submissionData = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      phone: formData.phone,
+      avatar: formData.avatar ? formData.avatar.name : null, // Just log file name for demo
+    };
 
-    try {
-      // Call send OTP API - ফিক্স: name সহ পাঠানো
-      const result = await sendOtp({ 
-        email: formData.email,
-        name: formData.name 
-      }).unwrap();
+    console.log("Form submitted:", submissionData);
+    alert("Check console for form data");
 
-      toast.dismiss(loadingToast);
-
-      if (result?.success) {
-        setStep("otp");
-        setOtpSentTime(Date.now());
-        setCanResendOtp(false);
-        setCountdown(30);
-
-        toast.success(
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="w-4 h-4 text-green-500" />
-            <span>OTP sent successfully! Check your email.</span>
-          </div>,
-          {
-            duration: 4000,
-            position: "top-right",
-          },
-        );
-      } else {
-        // যদি success false হয় কিন্তু error না থাকে
-        toast.error(
-          <div className="flex items-center space-x-2">
-            <XCircle className="w-4 h-4 text-red-500" />
-            <span>Failed to send OTP. Please try again.</span>
-          </div>,
-          {
-            duration: 4000,
-            position: "top-right",
-          },
-        );
-      }
-    } catch (err: any) {
-      toast.dismiss(loadingToast);
-
-      let errorMessage = "Failed to send OTP. Please try again.";
-
-      // Handle different error types
-      if (err?.data?.message) {
-        errorMessage = err.data.message;
-      } else if (err?.data?.error) {
-        errorMessage = err.data.error;
-      } else if (err?.status === 400) {
-        errorMessage = "Invalid email address or email already exists";
-      } else if (err?.status === 429) {
-        errorMessage = "Too many attempts. Please try again after 1 minute.";
-      } else if (err?.status === 500) {
-        errorMessage = "Server error. Please try again later.";
-      } else if (!navigator.onLine) {
-        errorMessage = "No internet connection. Please check your network.";
-      } else if (err?.message?.includes("Network")) {
-        errorMessage = "Network error. Please check your connection.";
-      }
-
-      toast.error(
-        <div className="flex items-center space-x-2">
-          <XCircle className="w-4 h-4 text-red-500" />
-          <span>{errorMessage}</span>
-        </div>,
-        {
-          duration: 5000,
-          position: "top-right",
-        },
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Verify OTP & Create User
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!otp) {
-      toast.error("Please enter the OTP");
-      return;
-    }
-
-    if (otp.length !== 6) {
-      toast.error("OTP must be 6 digits");
-      return;
-    }
-
-    setIsLoading(true);
-    setErrors({});
-
-    const loadingToast = toast.loading("Verifying OTP and creating account...");
-
-    try {
-      // Step 1: Verify OTP
-      const verifyResult = await verifyOtp({
-        email: formData.email,
-        otp: otp.trim(),
-      }).unwrap();
-
-      if (!verifyResult?.success) {
-        throw new Error("OTP verification failed");
-      }
-
-      // Step 2: Create user account
-      const createResult = await createUsers({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        gender: formData.gender,
-        role,
-      }).unwrap();
-
-      if (!createResult?.success) {
-        throw new Error("Account creation failed");
-      }
-
-      toast.dismiss(loadingToast);
-
-      // Step 3: Auto login
-      await loginUser({
-        email: formData.email,
-        password: formData.password,
-      }).unwrap();
-
-      toast.success(
-        <div className="flex items-center space-x-2">
-          <CheckCircle className="w-4 h-4 text-green-500" />
-          <span>Account created successfully! Redirecting to Home...</span>
-        </div>,
-        {
-          duration: 2000,
-          position: "top-right",
-        },
-      );
-
-      setTimeout(() => {
-        router.push("/");
-      }, 1500);
-    } catch (err: any) {
-      toast.dismiss(loadingToast);
-
-      let errorMessage = "Failed to verify OTP. Please try again.";
-
-      // Handle different error types
-      if (err?.data?.message) {
-        errorMessage = err.data.message;
-      } else if (err?.data?.error) {
-        errorMessage = err.data.error;
-      } else if (err?.status === 400) {
-        if (err?.data?.includes?.("expired")) {
-          errorMessage = "OTP has expired. Please request a new one.";
-        } else if (err?.data?.includes?.("invalid")) {
-          errorMessage = "Invalid OTP. Please check and try again.";
-        } else if (err?.data?.includes?.("already exists")) {
-          errorMessage = "User already exists with this email.";
-        } else {
-          errorMessage = "Invalid OTP or request data.";
-        }
-      } else if (err?.status === 401) {
-        errorMessage = "OTP verification failed. Please try again.";
-      } else if (err?.status === 409) {
-        errorMessage = "User already exists with this email.";
-      } else if (err?.status === 500) {
-        errorMessage = "Server error. Please try again later.";
-      } else if (err?.message?.includes?.("network")) {
-        errorMessage = "Network error. Please check your connection.";
-      }
-
-      toast.error(
-        <div className="flex items-center space-x-2">
-          <XCircle className="w-4 h-4 text-red-500" />
-          <span>{errorMessage}</span>
-        </div>,
-        {
-          duration: 5000,
-          position: "top-right",
-        },
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Resend OTP
-  const handleResendOtp = async () => {
-    if (!canResendOtp) {
-      toast.error(`Please wait ${countdown} seconds before resending OTP`);
-      return;
-    }
-
-    setIsLoading(true);
-    const loadingToast = toast.loading("Resending OTP...");
-
-    try {
-      const result = await resendOtp({ 
-        email: formData.email,
-        name: formData.name 
-      }).unwrap();
-
-      toast.dismiss(loadingToast);
-
-      if (result?.success) {
-        setOtpSentTime(Date.now());
-        setCanResendOtp(false);
-        setCountdown(30);
-
-        toast.success(
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="w-4 h-4 text-green-500" />
-            <span>OTP resent successfully! Check your email.</span>
-          </div>,
-          {
-            duration: 4000,
-            position: "top-right",
-          },
-        );
-      } else {
-        toast.error(
-          <div className="flex items-center space-x-2">
-            <XCircle className="w-4 h-4 text-red-500" />
-            <span>Failed to resend OTP. Please try again.</span>
-          </div>,
-          {
-            duration: 4000,
-            position: "top-right",
-          },
-        );
-      }
-    } catch (err: any) {
-      toast.dismiss(loadingToast);
-
-      let errorMessage = "Failed to resend OTP. Please try again.";
-
-      if (err?.data?.message) {
-        errorMessage = err.data.message;
-      } else if (err?.status === 429) {
-        errorMessage = "Too many resend attempts. Please try again later.";
-      } else if (err?.status === 400) {
-        errorMessage = "Unable to resend OTP. Please try again.";
-      } else if (err?.status === 500) {
-        errorMessage = "Server error. Please try again later.";
-      }
-
-      toast.error(
-        <div className="flex items-center space-x-2">
-          <XCircle className="w-4 h-4 text-red-500" />
-          <span>{errorMessage}</span>
-        </div>,
-        {
-          duration: 4000,
-          position: "top-right",
-        },
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(false);
   };
 
   return (
@@ -452,26 +157,17 @@ const RegistrationPage = () => {
         <title>Create Account | Sign Up</title>
         <meta
           name="description"
-          content="Create a new account to join our platform. Choose between Tutor and Student roles to get started."
+          content="Create a new account to join our platform."
         />
-        <meta
-          name="keywords"
-          content="sign up, register, create account, tutor, student, join"
-        />
+        <meta name="keywords" content="sign up, register, create account" />
         <meta name="author" content="Your Company" />
         <meta property="og:title" content="Create Account" />
-        <meta
-          property="og:description"
-          content="Join our platform and start your journey as a Tutor or Student"
-        />
+        <meta property="og:description" content="Join our platform today" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://yourdomain.com/registration" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Create Account" />
-        <meta
-          name="twitter:description"
-          content="Join our platform and start your journey as a Tutor or Student"
-        />
+        <meta name="twitter:description" content="Join our platform today" />
         <link rel="canonical" href="https://yourdomain.com/registration" />
       </Head>
 
@@ -498,7 +194,7 @@ const RegistrationPage = () => {
         </ol>
       </nav>
 
-      <div className="min-h-screen bg-linear-to-br from-primary/5 via-white to-primary/10 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-primary/10 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           <Link
             href="/"
@@ -514,7 +210,7 @@ const RegistrationPage = () => {
               <header className="p-6 sm:p-8 pb-0">
                 <div className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="relative w-12 h-12 rounded-xl bg-linear-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
                       <UserPlus className="w-6 h-6 text-white" />
                     </div>
                   </div>
@@ -522,9 +218,7 @@ const RegistrationPage = () => {
                     Create Account
                   </h1>
                   <p className="text-sm text-gray-600">
-                    {step === "form"
-                      ? "Join our platform and start your journey"
-                      : "Verify your email address"}
+                    Fill in your details to get started
                   </p>
                 </div>
               </header>
@@ -537,504 +231,300 @@ const RegistrationPage = () => {
                   Registration Form
                 </h2>
 
-                {step === "form" ? (
-                  <form
-                    onSubmit={handleSubmit}
-                    className="space-y-4"
-                    aria-label="Registration form"
-                  >
-                    <div className="space-y-2">
-                      <label className="block text-xs font-medium text-gray-700">
-                        I want to join as
-                      </label>
-                      <div className="flex gap-3">
-                        {["TUTOR", "STUDENT"].map((r) => (
-                          <button
-                            key={r}
-                            type="button"
-                            onClick={() =>
-                              handleRoleSelect(r as "STUDENT" | "TUTOR")
-                            }
-                            className={`w-full py-2.5 text-sm font-medium rounded-lg border transition-all duration-200 ${
-                              role === r
-                                ? "bg-primary text-white border-primary shadow-sm"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-primary hover:text-primary"
-                            }`}
-                            aria-pressed={role === r}
-                          >
-                            {r === "TUTOR" ? "Tutor" : "Student"}
-                          </button>
-                        ))}
-                      </div>
-                      {errors.role && (
-                        <p
-                          className="text-xs text-red-600 flex items-center space-x-1"
-                          role="alert"
-                          aria-live="polite"
-                        >
-                          <XCircle className="w-3 h-3" aria-hidden="true" />
-                          <span>{errors.role}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label
-                        htmlFor="name"
-                        className="block text-xs font-medium text-gray-700"
-                      >
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <User
-                            className="h-4 w-4 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <input
-                          id="name"
-                          name="name"
-                          type="text"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${
-                            errors.name
-                              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                              : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200`}
-                          placeholder="John Doe"
-                          aria-describedby={
-                            errors.name ? "name-error" : undefined
-                          }
-                          aria-invalid={!!errors.name}
-                        />
-                      </div>
-                      {errors.name && (
-                        <p
-                          id="name-error"
-                          className="text-xs text-red-600 flex items-center space-x-1"
-                          role="alert"
-                          aria-live="polite"
-                        >
-                          <XCircle className="w-3 h-3" aria-hidden="true" />
-                          <span>{errors.name}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label
-                        htmlFor="email"
-                        className="block text-xs font-medium text-gray-700"
-                      >
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Mail
-                            className="h-4 w-4 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <input
-                          id="email"
-                          name="email"
-                          type="email"
-                          autoComplete="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${
-                            errors.email
-                              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                              : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200`}
-                          placeholder="you@example.com"
-                          aria-describedby={
-                            errors.email ? "email-error" : undefined
-                          }
-                          aria-invalid={!!errors.email}
-                        />
-                      </div>
-                      {errors.email && (
-                        <p
-                          id="email-error"
-                          className="text-xs text-red-600 flex items-center space-x-1"
-                          role="alert"
-                          aria-live="polite"
-                        >
-                          <XCircle className="w-3 h-3" aria-hidden="true" />
-                          <span>{errors.email}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label
-                        htmlFor="gender"
-                        className="block text-xs font-medium text-gray-700"
-                      >
-                        Gender
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="gender"
-                          name="gender"
-                          value={formData.gender}
-                          onChange={handleInputChange}
-                          className={`text-sm w-full px-3 py-2.5 rounded-lg border text-black ${
-                            errors.gender
-                              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                              : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200 appearance-none`}
-                          aria-describedby={
-                            errors.gender ? "gender-error" : undefined
-                          }
-                          aria-invalid={!!errors.gender}
-                        >
-                          <option value="">Select Gender</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                          <option value="Other">Other</option>
-                        </select>
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <svg
-                            className="h-4 w-4 text-black"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M19 9l-7 7-7-7"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                      {errors.gender && (
-                        <p
-                          id="gender-error"
-                          className="text-xs text-red-600 flex items-center space-x-1"
-                          role="alert"
-                          aria-live="polite"
-                        >
-                          <XCircle className="w-3 h-3" aria-hidden="true" />
-                          <span>{errors.gender}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label
-                        htmlFor="password"
-                        className="block text-xs font-medium text-gray-700"
-                      >
-                        Password
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Lock
-                            className="h-4 w-4 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <input
-                          id="password"
-                          name="password"
-                          type={showPassword ? "text" : "password"}
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg text-black border ${
-                            errors.password
-                              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                              : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200`}
-                          placeholder="••••••••"
-                          aria-describedby={
-                            errors.password ? "password-error" : undefined
-                          }
-                          aria-invalid={!!errors.password}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          aria-label={
-                            showPassword ? "Hide password" : "Show password"
-                          }
-                          aria-pressed={showPassword}
-                        >
-                          {showPassword ? (
-                            <EyeOff
-                              className="h-4 w-4 text-gray-400 hover:text-gray-600"
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <Eye
-                              className="h-4 w-4 text-gray-400 hover:text-gray-600"
-                              aria-hidden="true"
-                            />
-                          )}
-                        </button>
-                      </div>
-                      {errors.password && (
-                        <p
-                          id="password-error"
-                          className="text-xs text-red-600 flex items-center space-x-1"
-                          role="alert"
-                          aria-live="polite"
-                        >
-                          <XCircle className="w-3 h-3" aria-hidden="true" />
-                          <span>{errors.password}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label
-                        htmlFor="confirmPassword"
-                        className="block text-xs font-medium text-gray-700"
-                      >
-                        Confirm Password
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Lock
-                            className="h-4 w-4 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <input
-                          id="confirmPassword"
-                          name="confirmPassword"
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={formData.confirmPassword}
-                          onChange={handleInputChange}
-                          className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg text-black border ${
-                            errors.confirmPassword
-                              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                              : "border-gray-300 focus:ring-primary focus:border-primary"
-                          } focus:outline-none focus:ring-1 transition-all duration-200`}
-                          placeholder="••••••••"
-                          aria-describedby={
-                            errors.confirmPassword
-                              ? "confirm-password-error"
-                              : undefined
-                          }
-                          aria-invalid={!!errors.confirmPassword}
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          aria-label={
-                            showConfirmPassword
-                              ? "Hide confirm password"
-                              : "Show confirm password"
-                          }
-                          aria-pressed={showConfirmPassword}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff
-                              className="h-4 w-4 text-gray-400 hover:text-gray-600"
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <Eye
-                              className="h-4 w-4 text-gray-400 hover:text-gray-600"
-                              aria-hidden="true"
-                            />
-                          )}
-                        </button>
-                      </div>
-                      {errors.confirmPassword && (
-                        <p
-                          id="confirm-password-error"
-                          className="text-xs text-red-600 flex items-center space-x-1"
-                          role="alert"
-                          aria-live="polite"
-                        >
-                          <XCircle className="w-3 h-3" aria-hidden="true" />
-                          <span>{errors.confirmPassword}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-start">
-                      <div className="flex items-center h-5">
-                        <input
-                          id="acceptTerms"
-                          name="acceptTerms"
-                          type="checkbox"
-                          checked={formData.acceptTerms}
-                          onChange={handleInputChange}
-                          className="h-3.5 w-3.5 text-primary focus:ring-primary border-gray-300 rounded"
-                          aria-describedby={
-                            errors.acceptTerms ? "terms-error" : undefined
-                          }
-                          aria-invalid={!!errors.acceptTerms}
-                        />
-                      </div>
-                      <div className="ml-2">
-                        <label
-                          htmlFor="acceptTerms"
-                          className="text-xs text-gray-700"
-                        >
-                          I agree to the{" "}
-                          <Link
-                            href="/terms"
-                            className="font-medium text-primary hover:text-primary/80"
-                            target="_blank"
-                          >
-                            Terms of Service
-                          </Link>{" "}
-                          and{" "}
-                          <Link
-                            href="/privacy"
-                            className="font-medium text-primary hover:text-primary/80"
-                            target="_blank"
-                          >
-                            Privacy Policy
-                          </Link>
-                        </label>
-                        {errors.acceptTerms && (
-                          <p
-                            id="terms-error"
-                            className="text-xs text-red-600 flex items-center space-x-1 mt-1"
-                            role="alert"
-                            aria-live="polite"
-                          >
-                            <XCircle className="w-3 h-3" aria-hidden="true" />
-                            <span>{errors.acceptTerms}</span>
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
-                      aria-label={
-                        isLoading ? "Creating account..." : "Create account"
-                      }
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-4"
+                  aria-label="Registration form"
+                >
+                  {/* Full Name */}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="name"
+                      className="block text-xs font-medium text-gray-700"
                     >
-                      {isLoading ? (
-                        <>
-                          <Loader2
-                            className="w-4 h-4 animate-spin"
-                            aria-hidden="true"
-                          />
-                          <span>Sending OTP...</span>
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="w-4 h-4" aria-hidden="true" />
-                          <span>Send OTP</span>
-                        </>
-                      )}
-                    </button>
-                  </form>
-                ) : (
-                  <form
-                    onSubmit={handleVerifyOtp}
-                    className="space-y-4"
-                    aria-label="OTP verification form"
-                  >
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-medium text-gray-700">
-                        OTP Verification
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <ShieldCheck
-                            className="h-4 w-4 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <input
-                          type="text"
-                          value={otp}
-                          onChange={(e) =>
-                            setOtp(
-                              e.target.value.replace(/\D/g, "").slice(0, 6),
-                            )
-                          }
-                          maxLength={6}
-                          className="text-sm text-black pl-9 w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary focus:outline-none focus:ring-1 transition-all duration-200 text-center tracking-widest"
-                          placeholder="123456"
-                          aria-label="Enter OTP code"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          autoComplete="one-time-code"
-                        />
+                      Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-4 w-4 text-gray-400" aria-hidden="true" />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Enter the 6-digit code sent to{" "}
-                        <span className="font-medium">{formData.email}</span>
-                      </p>
-                      {countdown > 0 && (
-                        <p className="text-xs text-blue-600 mt-1">
-                          You can resend OTP in {countdown} seconds
-                        </p>
-                      )}
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${errors.name
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          } focus:outline-none focus:ring-1 transition-all duration-200`}
+                        placeholder="John Doe"
+                        aria-describedby={errors.name ? "name-error" : undefined}
+                        aria-invalid={!!errors.name}
+                      />
                     </div>
-
-                    <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        disabled={isLoading || otp.length !== 6}
-                        className="flex-1 bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    {errors.name && (
+                      <p
+                        id="name-error"
+                        className="text-xs text-red-600 flex items-center space-x-1"
+                        role="alert"
+                        aria-live="polite"
                       >
-                        {isLoading ? (
-                          <>
-                            <Loader2
-                              className="w-4 h-4 animate-spin"
-                              aria-hidden="true"
-                            />
-                            <span>Verifying...</span>
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle
-                              className="w-4 h-4"
-                              aria-hidden="true"
-                            />
-                            <span>Verify OTP</span>
-                          </>
-                        )}
-                      </button>
+                        <XCircle className="w-3 h-3" aria-hidden="true" />
+                        <span>{errors.name}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Email */}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="email"
+                      className="block text-xs font-medium text-gray-700"
+                    >
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Mail className="h-4 w-4 text-gray-400" aria-hidden="true" />
+                      </div>
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${errors.email
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          } focus:outline-none focus:ring-1 transition-all duration-200`}
+                        placeholder="you@example.com"
+                        aria-describedby={errors.email ? "email-error" : undefined}
+                        aria-invalid={!!errors.email}
+                      />
+                    </div>
+                    {errors.email && (
+                      <p
+                        id="email-error"
+                        className="text-xs text-red-600 flex items-center space-x-1"
+                        role="alert"
+                        aria-live="polite"
+                      >
+                        <XCircle className="w-3 h-3" aria-hidden="true" />
+                        <span>{errors.email}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Phone */}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="phone"
+                      className="block text-xs font-medium text-gray-700"
+                    >
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Phone className="h-4 w-4 text-gray-400" aria-hidden="true" />
+                      </div>
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        autoComplete="tel"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className={`text-sm pl-9 w-full px-3 py-2.5 rounded-lg border text-black ${errors.phone
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          } focus:outline-none focus:ring-1 transition-all duration-200`}
+                        placeholder="+1234567890"
+                        aria-describedby={errors.phone ? "phone-error" : undefined}
+                        aria-invalid={!!errors.phone}
+                      />
+                    </div>
+                    {errors.phone && (
+                      <p
+                        id="phone-error"
+                        className="text-xs text-red-600 flex items-center space-x-1"
+                        role="alert"
+                        aria-live="polite"
+                      >
+                        <XCircle className="w-3 h-3" aria-hidden="true" />
+                        <span>{errors.phone}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Password */}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="password"
+                      className="block text-xs font-medium text-gray-700"
+                    >
+                      Password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-4 w-4 text-gray-400" aria-hidden="true" />
+                      </div>
+                      <input
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg text-black border ${errors.password
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          } focus:outline-none focus:ring-1 transition-all duration-200`}
+                        placeholder="••••••••"
+                        aria-describedby={errors.password ? "password-error" : undefined}
+                        aria-invalid={!!errors.password}
+                      />
                       <button
                         type="button"
-                        onClick={handleResendOtp}
-                        disabled={isLoading || !canResendOtp}
-                        className="flex-1 border border-gray-300 hover:border-primary text-gray-700 hover:text-primary font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-pressed={showPassword}
                       >
-                        {isLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : !canResendOtp ? (
-                          <span>Resend ({countdown}s)</span>
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                         ) : (
-                          "Resend OTP"
+                          <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                         )}
                       </button>
                     </div>
+                    {errors.password && (
+                      <p
+                        id="password-error"
+                        className="text-xs text-red-600 flex items-center space-x-1"
+                        role="alert"
+                        aria-live="polite"
+                      >
+                        <XCircle className="w-3 h-3" aria-hidden="true" />
+                        <span>{errors.password}</span>
+                      </p>
+                    )}
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setStep("form")}
-                      className="text-xs text-gray-600 hover:text-primary flex items-center justify-center space-x-1"
-                      aria-label="Go back to registration form"
+                  {/* Confirm Password */}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="confirmPassword"
+                      className="block text-xs font-medium text-gray-700"
                     >
-                      <ArrowLeft className="w-3 h-3" />
-                      <span>Back to registration</span>
-                    </button>
-                  </form>
-                )}
+                      Confirm Password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-4 w-4 text-gray-400" aria-hidden="true" />
+                      </div>
+                      <input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        className={`text-sm pl-9 pr-9 w-full px-3 py-2.5 rounded-lg text-black border ${errors.confirmPassword
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:ring-primary focus:border-primary"
+                          } focus:outline-none focus:ring-1 transition-all duration-200`}
+                        placeholder="••••••••"
+                        aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
+                        aria-invalid={!!errors.confirmPassword}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                        aria-pressed={showConfirmPassword}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p
+                        id="confirm-password-error"
+                        className="text-xs text-red-600 flex items-center space-x-1"
+                        role="alert"
+                        aria-live="polite"
+                      >
+                        <XCircle className="w-3 h-3" aria-hidden="true" />
+                        <span>{errors.confirmPassword}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Avatar (optional) */}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="avatar"
+                      className="block text-xs font-medium text-gray-700"
+                    >
+                      Profile Picture (optional)
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Camera className="h-4 w-4 text-gray-400" aria-hidden="true" />
+                      </div>
+                      <input
+                        id="avatar"
+                        name="avatar"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="text-sm pl-9 w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary focus:outline-none focus:ring-1 transition-all duration-200 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                        aria-describedby={errors.avatar ? "avatar-error" : undefined}
+                        aria-invalid={!!errors.avatar}
+                      />
+                    </div>
+                    {formData.avatar && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Selected: {formData.avatar.name}
+                      </p>
+                    )}
+                    {errors.avatar && (
+                      <p
+                        id="avatar-error"
+                        className="text-xs text-red-600 flex items-center space-x-1"
+                        role="alert"
+                        aria-live="polite"
+                      >
+                        <XCircle className="w-3 h-3" aria-hidden="true" />
+                        <span>{errors.avatar}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+                    aria-label={isLoading ? "Creating account..." : "Create account"}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" aria-hidden="true" />
+                        <span>Create Account</span>
+                      </>
+                    )}
+                  </button>
+                </form>
 
                 <div className="mt-6">
                   <div className="relative">
@@ -1053,10 +543,7 @@ const RegistrationPage = () => {
                         className="font-medium text-primary hover:text-primary/80 transition-colors inline-flex items-center group"
                         aria-label="Sign in to your account"
                       >
-                        <User
-                          className="w-3 h-3 mr-1 group-hover:scale-110 transition-transform"
-                          aria-hidden="true"
-                        />
+                        <User className="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" />
                         Sign in here
                       </Link>
                     </p>
