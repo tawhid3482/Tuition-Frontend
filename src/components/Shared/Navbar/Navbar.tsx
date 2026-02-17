@@ -72,8 +72,8 @@ export default function Navbar() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const wishlistCount = 3; 
-  const cartCount = 2; 
+  const wishlistCount = 3;
+  const cartCount = 2;
 
   // Refs
   const searchRef = useRef<HTMLDivElement>(null);
@@ -514,18 +514,6 @@ export default function Navbar() {
               ))
             )}
           </div>
-
-          {notifications.length > 0 && (
-            <div className="p-3 border-t">
-              <Link
-                href="/notifications"
-                className="w-full text-sm text-blue-600 hover:text-blue-800 font-medium flex justify-center"
-                onClick={() => setNotificationOpen(false)}
-              >
-                View All Notifications
-              </Link>
-            </div>
-          )}
         </div>
       )}
     </div>
@@ -760,47 +748,7 @@ export default function Navbar() {
                           <LayoutDashboard className="w-4 h-4 mr-3" />
                           <span className="font-medium text-sm">Dashboard</span>
                         </Link>
-                        <Link
-                          href="/wishlist"
-                          className="flex items-center px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200"
-                          onClick={() => setProfileDropdownOpen(false)}
-                        >
-                          <Heart className="w-4 h-4 mr-3" />
-                          <span className="font-medium text-sm">Wishlist</span>
-                          {wishlistCount > 0 && (
-                            <span className="ml-auto bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                              {wishlistCount}
-                            </span>
-                          )}
-                        </Link>
-                        <Link
-                          href="/cart"
-                          className="flex items-center px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200"
-                          onClick={() => setProfileDropdownOpen(false)}
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-3" />
-                          <span className="font-medium text-sm">Cart</span>
-                          {cartCount > 0 && (
-                            <span className="ml-auto bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                              {cartCount}
-                            </span>
-                          )}
-                        </Link>
-                        <Link
-                          href="/notifications"
-                          className="flex items-center px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200"
-                          onClick={() => setProfileDropdownOpen(false)}
-                        >
-                          <Bell className="w-4 h-4 mr-3" />
-                          <span className="font-medium text-sm">
-                            All Notifications
-                          </span>
-                          {unreadCount > 0 && (
-                            <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                              {unreadCount}
-                            </span>
-                          )}
-                        </Link>
+
                         <button
                           className="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200"
                           onClick={handleLogout}
@@ -1022,7 +970,7 @@ export default function Navbar() {
 
                 {/* Mobile Bottom Profile Dropdown */}
                 {bottomDropdownOpen === "profile" && (
-                  <div className="absolute bottom-full -left-2 -translate-x-1/2 mb-2 w-40 bg-white rounded-lg shadow-xl py-2 border border-primary z-50">
+                  <div className="absolute bottom-full left-2 -translate-x-1/2 mb-2 w-40 bg-white rounded-lg shadow-xl py-2 border border-primary z-50">
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-semibold text-gray-900 truncate">
                         {user?.name || "User"}
@@ -1032,75 +980,19 @@ export default function Navbar() {
                       </p>
                     </div>
                     <div
-                      className="px-4 py-2"
+                      className="px-4 py-1"
                       onClick={() => {
                         handleMobileNavigation("/dashboard", "Dashboard");
                         setBottomDropdownOpen(null);
                       }}
                     >
-                      <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1.5">
+                      <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1">
                         <LayoutDashboard className="w-4 h-4 mr-2" />
                         <span className="font-medium text-sm">Dashboard</span>
                       </div>
                     </div>
-                    <div
-                      className="px-4 py-2"
-                      onClick={() => {
-                        handleMobileNavigation("/wishlist", "Wishlist");
-                        setBottomDropdownOpen(null);
-                      }}
-                    >
-                      <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1.5">
-                        <Heart className="w-4 h-4 mr-2" />
-                        <span className="font-medium text-sm">Wishlist</span>
-                        {wishlistCount > 0 && (
-                          <span className="ml-auto bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                            {wishlistCount}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div
-                      className="px-4 py-2"
-                      onClick={() => {
-                        handleMobileNavigation("/cart", "Cart");
-                        setBottomDropdownOpen(null);
-                      }}
-                    >
-                      <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1.5">
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        <span className="font-medium text-sm">Cart</span>
-                        {cartCount > 0 && (
-                          <span className="ml-auto bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                            {cartCount}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div
-                      className="px-4 py-2"
-                      onClick={() => {
-                        handleMobileNavigation(
-                          "/notifications",
-                          "Notifications",
-                        );
-                        setBottomDropdownOpen(null);
-                      }}
-                    >
-                      <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1.5">
-                        <Bell className="w-4 h-4 mr-2" />
-                        <span className="font-medium text-sm">
-                          All Notifications
-                        </span>
-                        {unreadCount > 0 && (
-                          <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                            {unreadCount}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="px-4 py-2" onClick={handleLogout}>
-                      <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1.5">
+                    <div className="px-4 py-1" onClick={handleLogout}>
+                      <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1">
                         <LogOut className="w-4 h-4 mr-2" />
                         <span className="font-medium text-sm">Log Out</span>
                       </div>
@@ -1137,17 +1029,6 @@ export default function Navbar() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 h-full">
-              {/* Close button at top */}
-              <div className="flex justify-end mb-4">
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 text-gray-600 hover:text-primary rounded-full hover:bg-primary/5"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
               {/* Conditional Mobile Profile Section */}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-3 p-3 mb-4 bg-linear-to-r from-primary/5 to-primary/10 rounded-xl">
@@ -1291,7 +1172,6 @@ export default function Navbar() {
                 ))}
               </div>
 
-              {/* Mobile Footer Actions - Conditional */}
               {isAuthenticated && (
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <div
@@ -1302,44 +1182,6 @@ export default function Navbar() {
                   >
                     <LayoutDashboard className="w-4 h-4" />
                     <span>Dashboard</span>
-                  </div>
-                  <div
-                    onClick={() => handleMobileNavigation("/wishlist", "Wishlist")}
-                    className="w-full border border-primary text-primary px-3 py-2.5 rounded-lg hover:bg-primary/5 transition-all duration-200 font-medium text-sm flex items-center justify-center space-x-2 mb-2 cursor-pointer"
-                  >
-                    <Heart className="w-4 h-4" />
-                    <span>Wishlist</span>
-                    {wishlistCount > 0 && (
-                      <span className="bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {wishlistCount}
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    onClick={() => handleMobileNavigation("/cart", "Cart")}
-                    className="w-full border border-primary text-primary px-3 py-2.5 rounded-lg hover:bg-primary/5 transition-all duration-200 font-medium text-sm flex items-center justify-center space-x-2 mb-2 cursor-pointer"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                    <span>Cart</span>
-                    {cartCount > 0 && (
-                      <span className="bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {cartCount}
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    onClick={() =>
-                      handleMobileNavigation("/notifications", "Notifications")
-                    }
-                    className="w-full border border-primary text-primary px-3 py-2.5 rounded-lg hover:bg-primary/5 transition-all duration-200 font-medium text-sm flex items-center justify-center space-x-2 mb-2 cursor-pointer"
-                  >
-                    <Bell className="w-4 h-4" />
-                    <span>View All Notifications</span>
-                    {unreadCount > 0 && (
-                      <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {unreadCount}
-                      </span>
-                    )}
                   </div>
                   <div
                     onClick={handleLogout}
