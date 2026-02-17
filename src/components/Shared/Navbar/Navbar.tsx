@@ -72,9 +72,8 @@ export default function Navbar() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Mock counts for wishlist and cart (replace with actual Redux state)
-  const wishlistCount = 3; // Replace with actual wishlist count from Redux
-  const cartCount = 2; // Replace with actual cart count from Redux
+  const wishlistCount = 3; 
+  const cartCount = 2; 
 
   // Refs
   const searchRef = useRef<HTMLDivElement>(null);
@@ -676,7 +675,7 @@ export default function Navbar() {
               >
                 <Heart className="w-5 h-5" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-white text-xs rounded-full flex items-center justify-center">
                     {wishlistCount}
                   </span>
                 )}
@@ -769,7 +768,7 @@ export default function Navbar() {
                           <Heart className="w-4 h-4 mr-3" />
                           <span className="font-medium text-sm">Wishlist</span>
                           {wishlistCount > 0 && (
-                            <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            <span className="ml-auto bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                               {wishlistCount}
                             </span>
                           )}
@@ -834,7 +833,7 @@ export default function Navbar() {
               >
                 <Heart className="w-5 h-5" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-white text-xs rounded-full flex items-center justify-center">
                     {wishlistCount}
                   </span>
                 )}
@@ -1055,7 +1054,7 @@ export default function Navbar() {
                         <Heart className="w-4 h-4 mr-2" />
                         <span className="font-medium text-sm">Wishlist</span>
                         {wishlistCount > 0 && (
-                          <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                          <span className="ml-auto bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                             {wishlistCount}
                           </span>
                         )}
@@ -1311,7 +1310,7 @@ export default function Navbar() {
                     <Heart className="w-4 h-4" />
                     <span>Wishlist</span>
                     {wishlistCount > 0 && (
-                      <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      <span className="bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                         {wishlistCount}
                       </span>
                     )}
