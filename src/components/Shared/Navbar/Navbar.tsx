@@ -23,9 +23,10 @@ import {
   LogIn,
   Menu,
   X,
-  BriefcaseBusiness,
-  GraduationCap,
-  Send,
+  ShoppingBag,
+  Users,
+  Heart,
+  ShoppingCart,
 } from "lucide-react";
 import Image from "next/image";
 import Logo from "../../../app/assets/logo.png";
@@ -48,22 +49,11 @@ const navItems: NavItem[] = [
     exact: true,
   },
   {
-    name: "Tuition Jobs",
-    icon: <BriefcaseBusiness className="w-4 h-4" />,
-    href: "/tuition-jobs",
+    name: "Shop",
+    icon: <ShoppingBag className="w-4 h-4" />,
+    href: "/shop",
   },
-  {
-    name: "Tutors",
-    icon: <GraduationCap className="w-4 h-4" />,
-    href: "/tutors",
-  },
-  {
-    name: "Tutor Request",
-    icon: <Send className="w-4 h-4" />,
-    href: "/tuition-request",
-  },
-
-  // { name: "Contact", icon: <Mail className="w-4 h-4" />, href: "/contact" },
+  { name: "About us", icon: <Users className="w-4 h-4" />, href: "/about" },
 ];
 
 export default function Navbar() {
@@ -81,6 +71,10 @@ export default function Navbar() {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Mock counts for wishlist and cart (replace with actual Redux state)
+  const wishlistCount = 3; // Replace with actual wishlist count from Redux
+  const cartCount = 2; // Replace with actual cart count from Redux
 
   // Refs
   const searchRef = useRef<HTMLDivElement>(null);
@@ -648,8 +642,8 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Desktop Right Side */}
-            <div className="hidden md:flex md:items-center md:space-x-6">
+            {/* Desktop Right Side - Added Wishlist and Cart Icons */}
+            <div className="hidden md:flex md:items-center md:space-x-4">
               {/* Search */}
               <div className="relative" ref={searchRef}>
                 <form onSubmit={handleSearch} className="flex items-center">
@@ -674,6 +668,32 @@ export default function Navbar() {
                   </div>
                 </form>
               </div>
+
+              {/* Wishlist Icon */}
+              <Link
+                href="/wishlist"
+                className="relative p-2 text-gray-600 hover:text-primary rounded-full hover:bg-primary/5 transition-all duration-200"
+              >
+                <Heart className="w-5 h-5" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Cart Icon */}
+              <Link
+                href="/cart"
+                className="relative p-2 text-gray-600 hover:text-primary rounded-full hover:bg-primary/5 transition-all duration-200"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-white text-xs rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
 
               {/* Conditional rendering based on authentication */}
               {isAuthenticated ? (
@@ -742,6 +762,32 @@ export default function Navbar() {
                           <span className="font-medium text-sm">Dashboard</span>
                         </Link>
                         <Link
+                          href="/wishlist"
+                          className="flex items-center px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200"
+                          onClick={() => setProfileDropdownOpen(false)}
+                        >
+                          <Heart className="w-4 h-4 mr-3" />
+                          <span className="font-medium text-sm">Wishlist</span>
+                          {wishlistCount > 0 && (
+                            <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                              {wishlistCount}
+                            </span>
+                          )}
+                        </Link>
+                        <Link
+                          href="/cart"
+                          className="flex items-center px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200"
+                          onClick={() => setProfileDropdownOpen(false)}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-3" />
+                          <span className="font-medium text-sm">Cart</span>
+                          {cartCount > 0 && (
+                            <span className="ml-auto bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                              {cartCount}
+                            </span>
+                          )}
+                        </Link>
+                        <Link
                           href="/notifications"
                           className="flex items-center px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200"
                           onClick={() => setProfileDropdownOpen(false)}
@@ -779,8 +825,34 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile Top Right (Search, Notification, Menu) */}
-            <div className="flex items-center space-x-2 md:hidden">
+            {/* Mobile Top Right - Added Wishlist and Cart Icons */}
+            <div className="flex items-center space-x-1 md:hidden">
+              {/* Wishlist Icon - Mobile */}
+              <Link
+                href="/wishlist"
+                className="relative p-2 text-gray-600 hover:text-primary rounded-full hover:bg-primary/5 transition-colors duration-200"
+              >
+                <Heart className="w-5 h-5" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Cart Icon - Mobile */}
+              <Link
+                href="/cart"
+                className="relative p-2 text-gray-600 hover:text-primary rounded-full hover:bg-primary/5 transition-colors duration-200"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-white text-xs rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+
               {/* Mobile Notification Bell - Only show if authenticated */}
               {isAuthenticated && <MobileNotificationBell />}
 
@@ -847,7 +919,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Bottom Navigation - YOUR OLD DESIGN */}
+      {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
         <div className="flex justify-around items-center h-14 px-1">
           {navItems.map((item) => (
@@ -970,6 +1042,40 @@ export default function Navbar() {
                       <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1.5">
                         <LayoutDashboard className="w-4 h-4 mr-2" />
                         <span className="font-medium text-sm">Dashboard</span>
+                      </div>
+                    </div>
+                    <div
+                      className="px-4 py-2"
+                      onClick={() => {
+                        handleMobileNavigation("/wishlist", "Wishlist");
+                        setBottomDropdownOpen(null);
+                      }}
+                    >
+                      <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1.5">
+                        <Heart className="w-4 h-4 mr-2" />
+                        <span className="font-medium text-sm">Wishlist</span>
+                        {wishlistCount > 0 && (
+                          <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                            {wishlistCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div
+                      className="px-4 py-2"
+                      onClick={() => {
+                        handleMobileNavigation("/cart", "Cart");
+                        setBottomDropdownOpen(null);
+                      }}
+                    >
+                      <div className="flex items-center text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200 group cursor-pointer rounded px-2 py-1.5">
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        <span className="font-medium text-sm">Cart</span>
+                        {cartCount > 0 && (
+                          <span className="ml-auto bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                            {cartCount}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div
@@ -1197,6 +1303,30 @@ export default function Navbar() {
                   >
                     <LayoutDashboard className="w-4 h-4" />
                     <span>Dashboard</span>
+                  </div>
+                  <div
+                    onClick={() => handleMobileNavigation("/wishlist", "Wishlist")}
+                    className="w-full border border-primary text-primary px-3 py-2.5 rounded-lg hover:bg-primary/5 transition-all duration-200 font-medium text-sm flex items-center justify-center space-x-2 mb-2 cursor-pointer"
+                  >
+                    <Heart className="w-4 h-4" />
+                    <span>Wishlist</span>
+                    {wishlistCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    onClick={() => handleMobileNavigation("/cart", "Cart")}
+                    className="w-full border border-primary text-primary px-3 py-2.5 rounded-lg hover:bg-primary/5 transition-all duration-200 font-medium text-sm flex items-center justify-center space-x-2 mb-2 cursor-pointer"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    <span>Cart</span>
+                    {cartCount > 0 && (
+                      <span className="bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
                   </div>
                   <div
                     onClick={() =>
