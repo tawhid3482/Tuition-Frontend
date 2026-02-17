@@ -6,20 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
-import {
-  Eye,
-  EyeOff,
-  User,
-  Mail,
-  Lock,
-  UserPlus,
-  CheckCircle,
-  XCircle,
-  Loader2,
-  ArrowLeft,
-  Phone,
-  Camera,
-} from "lucide-react";
+import { Eye, EyeOff, User, Mail, Lock, UserPlus, CheckCircle, XCircle, Loader2, ArrowLeft, Phone, Camera } from "lucide-react";
 import { useSignupUserMutation } from "@/src/redux/features/user/userApi";
 import { useLoginUserMutation } from "@/src/redux/features/auth/authApi";
 import toast from "react-hot-toast";
@@ -263,7 +250,7 @@ const RegistrationPage = () => {
         </ol>
       </nav>
 
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-primary/10 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-linear-to-br from-primary/5 via-white to-primary/10 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           <Link
             href="/"
@@ -279,7 +266,7 @@ const RegistrationPage = () => {
               <header className="p-6 sm:p-8 pb-0">
                 <div className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <div className="relative w-12 h-12 rounded-xl bg-linear-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
                       <UserPlus className="w-6 h-6 text-white" />
                     </div>
                   </div>
@@ -582,7 +569,7 @@ const RegistrationPage = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+                    className="w-full bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
                     aria-label={isLoading ? "Creating account..." : "Create account"}
                   >
                     {isLoading ? (
