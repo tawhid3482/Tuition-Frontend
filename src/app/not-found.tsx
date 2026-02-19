@@ -1,22 +1,17 @@
-import Head from "next/head";
+﻿import type { Metadata } from "next";
 import NotFound from "../components/NoFound/NotFound";
+
+export const metadata: Metadata = {
+  title: "Page Not Found",
+  description: "The page you are looking for does not exist.",
+  robots: { index: false, follow: true },
+};
 
 const NotFoundPage = () => {
   return (
-    <>
-      <Head>
-        <title>Page Not Found | TR-Tuition</title>
-        <meta
-          name="description"
-          content="Oops! The page you're looking for doesn't exist."
-        />
-        <meta name="robots" content="noindex, follow" />
-      </Head>
-
-      <div className="min-h-screen flex items-center justify-center bg-white px-6 text-center">
-        <NotFound />
-      </div>
-    </>
+    <div className="min-h-screen flex items-center justify-center bg-white px-6 text-center">
+      <NotFound />
+    </div>
   );
 };
 

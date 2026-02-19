@@ -1,13 +1,12 @@
-// src/app/layout.tsx
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import "./globals.css";
-import { Geist_Mono } from "next/font/google";
+import { Geist_Mono, Open_Sans } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Providers from "@/src/lib/Providers/Providers";
 import { getSettings } from "@/src/lib/api/getSettings";
 import AuthProvider from "../lib/Providers/AuthProvider";
 import FCMProvider from "../lib/Providers/FCMProvider";
-import { Open_Sans } from "next/font/google";
+import { SITE_NAME, SITE_URL } from "@/src/config/site";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -21,9 +20,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Code Base",
-  description: "Modern SEO friendly web application",
-  robots: "index, follow",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} | Modern E-commerce`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: "Secure and modern e-commerce platform for shopping quality products.",
+  applicationName: SITE_NAME,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} | Modern E-commerce`,
+    description: "Secure and modern e-commerce platform for shopping quality products.",
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} | Modern E-commerce`,
+    description: "Secure and modern e-commerce platform for shopping quality products.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function RootLayout({
@@ -31,7 +52,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const settings = await getSettings(); // ✅ SERVER SAFE
+  const settings = await getSettings();
 
   return (
     <html lang="en">
@@ -54,14 +75,11 @@ export default async function RootLayout({
             "--btn-active": settings.btnActive,
           } as React.CSSProperties
         }
-        // className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
         className={`${openSans.className} ${geistMono.variable} antialiased`}
       >
         <Providers>
           <AuthProvider>
-            {/* ✅ client-only FCM logic */}
             <FCMProvider />
-
             <Toaster position="top-right" />
             {children}
           </AuthProvider>

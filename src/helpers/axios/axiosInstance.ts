@@ -1,6 +1,8 @@
-import axios from "axios";
+﻿import axios from "axios";
+import { API_BASE_URL } from "@/src/config/site";
 
 export const instance = axios.create({
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -11,22 +13,17 @@ export const instance = axios.create({
 instance.interceptors.response.use(
   (res) => res,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error?.config;
 
-    if (error?.response?.status === 401 && !originalRequest._retry) {
+    if (error?.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_BASE_API}/auth/refresh-token`,
-          {},
-          { withCredentials: true },
-        );
-
+        await axios.post(`${API_BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
         return instance(originalRequest);
       } catch {
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          window.location.assign("/login");
         }
       }
     }
@@ -34,36 +31,3 @@ instance.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-
-// import axios from "axios";
-
-// export const instance = axios.create({
-//   withCredentials: true, // cookie পাঠানোর জন্য
-//   headers: { "Content-Type": "application/json" },
-//   timeout: 60000,
-// });
-
-// instance.interceptors.response.use(
-//   (res) => res,
-//   async (error) => {
-//     const originalRequest = error.config;
-
-//     if (error?.response?.status === 401 && !originalRequest._retry) {
-//       originalRequest._retry = true;
-
-//       try {
-//         await axios.post(
-//           `${process.env.NEXT_PUBLIC_BACKEND_BASE_API}/auth/refresh-token`,
-//           {},
-//           { withCredentials: true }
-//         );
-//         return instance(originalRequest);
-//       } catch {
-//         if (typeof window !== "undefined") window.location.href = "/login";
-//       }
-//     }
-
-//     return Promise.reject(error);
-//   }
-// );

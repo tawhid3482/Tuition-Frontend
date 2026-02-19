@@ -1,30 +1,34 @@
-import { BannerSlide } from "@/src/components/Banner/Banner";
-
+﻿import { BannerSlide } from "@/src/components/Banner/Banner";
 
 export const bannerSlides: BannerSlide[] = [
-    {
-        id: "1",
-        bgImage: "https://images.unsplash.com/photo-1496449904483-8e2f10a5a0b1?q=80&w=2070&auto=format&fit=crop",
-        title: "Welcome to Our Platform",
-        description: "Discover amazing features and services tailored just for you. Join us today and start your journey.",
-        buttonText: "Get Started",
-        buttonLink: "/signup",
-        // rightImage is optional, so we omit it
-    },
-    {
-        id: "2",
-        bgImage: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2070&auto=format&fit=crop",
-        title: "Learn from Experts",
-        description: "Access high-quality courses and tutorials created by industry professionals.",
-        buttonText: "Explore Courses",
-        buttonLink: "/courses",
-    },
-    {
-        id: "3",
-        bgImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop",
-        title: "Join Our Community",
-        description: "Connect with like-minded individuals and grow together.",
-        buttonText: "Join Now",
-        buttonLink: "/community",
-    },
+  {
+    id: "1",
+    title: "Carry The Trend",
+    description:
+      "Shop premium bags and accessories with clean design, fast delivery, and secure checkout.",
+    buttonText: "Shop Bags",
+    buttonLink: "/shop",
+    tag: "Best Seller",
+    rightImage: "/banner/shopping-bag-1.svg",
+  },
+  {
+    id: "2",
+    title: "Style Meets Utility",
+    description:
+      "Discover modern shopping bags and daily essentials built for comfort and bold style.",
+    buttonText: "Explore Collection",
+    buttonLink: "/shop",
+    tag: "New Arrival",
+    rightImage: "/banner/shopping-bag-2.svg",
+  },
+  {
+    id: "3",
+    title: "Fresh Picks Every Week",
+    description:
+      "From classic to colorful, find the perfect bag for every look and every occasion.",
+    buttonText: "Start Shopping",
+    buttonLink: "/shop",
+    tag: "Limited Offer",
+    rightImage: "/banner/shopping-bag-3.svg",
+  },
 ];

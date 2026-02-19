@@ -1,39 +1,28 @@
-import { baseApi } from "../../api/baseApi";
+﻿import { baseApi } from "../../api/baseApi";
 import { tagTypes } from "../../tag-types";
 
-const authApi = baseApi.injectEndpoints({
+const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     signupUser: builder.mutation({
-      query: (formData) => {
-        return {
-          url: "/user/signup",
-          method: "POST",
-          data: formData,
-        };
-      },
+      query: (formData) => ({
+        url: "/user/signup",
+        method: "POST",
+        data: formData,
+      }),
       invalidatesTags: [tagTypes.user],
     }),
 
     getAllUser: builder.query({
       query: () => ({
-        url: `/user/allUsers`,
+        url: "/user/allUsers",
         method: "GET",
       }),
       providesTags: [tagTypes.user],
     }),
-
-    getAllDistrictTutors: builder.query({
-      query: () => ({
-        url: `/user/district-tutors`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.user],
-    }),
-
 
     getMe: builder.query({
       query: () => ({
-        url: `/user/me`,
+        url: "/user/me",
         method: "GET",
       }),
       providesTags: [tagTypes.user],
@@ -41,5 +30,4 @@ const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useSignupUserMutation, useGetAllUserQuery, useGetMeQuery,useGetAllDistrictTutorsQuery } =
-  authApi;
+export const { useSignupUserMutation, useGetAllUserQuery, useGetMeQuery } = userApi;

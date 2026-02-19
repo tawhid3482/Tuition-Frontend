@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/static-components */
+﻿/* eslint-disable react-hooks/static-components */
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -53,7 +53,7 @@ const navItems: NavItem[] = [
     icon: <ShoppingBag className="w-4 h-4" />,
     href: "/shop",
   },
-  { name: "About us", icon: <Users className="w-4 h-4" />, href: "/about" },
+  { name: "About", icon: <Users className="w-4 h-4" />, href: "/about" },
 ];
 
 export default function Navbar() {
@@ -90,10 +90,10 @@ export default function Navbar() {
 
   // Notification APIs
   const {
-    data: notificationResponse,
+    data: notificationResponseRaw,
     refetch: refetchNotifications,
     isLoading: notificationsLoading,
-  } = useGetUserNotificationsQuery(user?.id || "", {
+  } = useGetUserNotificationsQuery(undefined, {
     skip: !user?.id,
     pollingInterval: 60000,
   });
@@ -101,6 +101,8 @@ export default function Navbar() {
   const [markAsRead] = useMarkNotificationAsReadMutation();
 
   // Extract notifications
+  const notificationResponse: any = notificationResponseRaw;
+
   const notifications = (() => {
     if (!notificationResponse) return [];
 
@@ -332,7 +334,7 @@ export default function Navbar() {
                 className="text-gray-500 hover:text-gray-700 ml-2"
                 aria-label="Close notifications"
               >
-                ✕
+                âœ•
               </button>
             </div>
           </div>
@@ -448,7 +450,7 @@ export default function Navbar() {
                 className="text-gray-500 hover:text-gray-700 ml-2"
                 aria-label="Close notifications"
               >
-                ✕
+                âœ•
               </button>
             </div>
           </div>
@@ -866,6 +868,28 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {/* Tablet Quick Navigation */}
+      <div className="hidden md:block lg:hidden fixed -bottom-5 left-0 right-0 z-40 px-4 pb-4">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white/95 shadow-xl backdrop-blur supports-backdrop-filter:bg-white/80">
+          <div className="grid grid-cols-3 gap-1 p-2">
+            {navItems.map((item) => (
+              <Link
+                key={`tablet-${item.name}`}
+                href={item.href}
+                onClick={() => handleItemClick(item.name)}
+                className={`flex flex-col items-center justify-center rounded-xl px-3 py-2.5 transition-all duration-200 ${
+                  isActive(item.name)
+                    ? "bg-primary/10 text-primary"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-primary"
+                }`}
+              >
+                <span className="mb-1">{item.icon}</span>
+                <span className="text-[11px] font-semibold leading-none">{item.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
         <div className="flex justify-around items-center h-14 px-1">
@@ -1199,3 +1223,14 @@ export default function Navbar() {
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+

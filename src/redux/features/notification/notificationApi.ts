@@ -1,43 +1,51 @@
+﻿import { baseApi } from "../../api/baseApi";
+import { tagTypes } from "../../tag-types";
 
-import { baseApi } from "../../api/baseApi";
+type SaveTokenPayload = {
+  token: string;
+  platform?: "web" | "android" | "ios";
+};
 
 const NotificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    SaveFcmToken: builder.mutation({
-      query: ({ userId, token, platform }) => ({
-        url: `/notification/save-token/${userId}`,
+    SaveFcmToken: builder.mutation<unknown, SaveTokenPayload>({
+      query: ({ token, platform }) => ({
+        url: "/notification/save-token",
         method: "POST",
         data: { token, platform },
       }),
+      invalidatesTags: [tagTypes.notification],
     }),
-    
-    // ✅ নতুন API endpoints
-    GetUserNotifications: builder.query({
-      query: (userId) => ({
-        url: `/notification/user/${userId}`,
+
+    GetUserNotifications: builder.query<unknown, void>({
+      query: () => ({
+        url: "/notification/user",
         method: "GET",
       }),
+      providesTags: [tagTypes.notification],
     }),
-    
-    MarkNotificationAsRead: builder.mutation({
+
+    MarkNotificationAsRead: builder.mutation<unknown, string>({
       query: (userNotificationId) => ({
         url: `/notification/read/${userNotificationId}`,
         method: "PUT",
       }),
+      invalidatesTags: [tagTypes.notification],
     }),
-    
-    SyncPendingNotifications: builder.mutation({
-      query: ({ userId }) => ({
-        url: `/notification/sync/${userId}`,
+
+    SyncPendingNotifications: builder.mutation<unknown, void>({
+      query: () => ({
+        url: "/notification/sync",
         method: "POST",
       }),
+      invalidatesTags: [tagTypes.notification],
     }),
   }),
 });
 
-export const { 
-  useSaveFcmTokenMutation, 
+export const {
+  useSaveFcmTokenMutation,
   useGetUserNotificationsQuery,
   useMarkNotificationAsReadMutation,
-  useSyncPendingNotificationsMutation 
+  useSyncPendingNotificationsMutation,
 } = NotificationApi;

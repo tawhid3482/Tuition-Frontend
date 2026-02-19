@@ -1,0 +1,14 @@
+﻿<svg width="520" height="620" viewBox="0 0 520 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="260" cy="590" rx="120" ry="18" fill="#0f172a" fill-opacity="0.12"/>
+  <circle cx="260" cy="115" r="44" fill="#F5C9A9"/>
+  <path d="M195 198C195 160 225 134 260 134C295 134 325 160 325 198V332H195V198Z" fill="#1DAA61"/>
+  <rect x="220" y="332" width="80" height="170" rx="34" fill="#0f172a"/>
+  <rect x="205" y="500" width="34" height="86" rx="16" fill="#0f172a"/>
+  <rect x="281" y="500" width="34" height="86" rx="16" fill="#0f172a"/>
+  <rect x="147" y="224" width="56" height="158" rx="26" transform="rotate(10 147 224)" fill="#F5C9A9"/>
+  <rect x="317" y="238" width="56" height="150" rx="26" transform="rotate(-12 317 238)" fill="#F5C9A9"/>
+  <rect x="88" y="328" width="116" height="132" rx="14" fill="#F59E0B"/>
+  <path d="M114 328C114 303 130 286 146 286C162 286 178 303 178 328" stroke="#B45309" stroke-width="10" stroke-linecap="round"/>
+  <rect x="325" y="340" width="114" height="124" rx="14" fill="#8B5CF6"/>
+  <path d="M350 340C350 316 366 300 382 300C398 300 414 316 414 340" stroke="#5B21B6" stroke-width="10" stroke-linecap="round"/>
+</svg>

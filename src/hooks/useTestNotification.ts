@@ -1,6 +1,6 @@
-// src/hooks/useTestNotification.ts
-import { useSelector } from "react-redux";
+﻿import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import { API_BASE_URL } from "../config/site";
 
 export const useTestNotification = () => {
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -9,8 +9,9 @@ export const useTestNotification = () => {
     if (!isAuthenticated || !user?.id) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/notification/test/${user.id}`, {
+      const res = await fetch(`${API_BASE_URL}/notification/test/${user.id}`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },

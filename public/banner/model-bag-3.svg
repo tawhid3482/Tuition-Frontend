@@ -1,0 +1,14 @@
+﻿<svg width="520" height="620" viewBox="0 0 520 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="262" cy="592" rx="128" ry="16" fill="#0f172a" fill-opacity="0.12"/>
+  <circle cx="262" cy="110" r="43" fill="#F5C7A5"/>
+  <path d="M192 198C192 160 224 136 262 136C300 136 332 160 332 198V330H192V198Z" fill="#EC4899"/>
+  <rect x="220" y="330" width="84" height="172" rx="34" fill="#1F2937"/>
+  <rect x="206" y="500" width="34" height="86" rx="16" fill="#1F2937"/>
+  <rect x="286" y="500" width="34" height="86" rx="16" fill="#1F2937"/>
+  <rect x="138" y="232" width="54" height="152" rx="24" transform="rotate(9 138 232)" fill="#F5C7A5"/>
+  <rect x="324" y="234" width="54" height="152" rx="24" transform="rotate(-10 324 234)" fill="#F5C7A5"/>
+  <rect x="70" y="336" width="114" height="126" rx="14" fill="#3B82F6"/>
+  <path d="M96 336C96 312 112 294 128 294C144 294 160 312 160 336" stroke="#1D4ED8" stroke-width="10" stroke-linecap="round"/>
+  <rect x="338" y="338" width="120" height="132" rx="14" fill="#F59E0B"/>
+  <path d="M364 338C364 314 380 296 398 296C416 296 432 314 432 338" stroke="#B45309" stroke-width="10" stroke-linecap="round"/>
+</svg>

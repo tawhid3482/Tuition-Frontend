@@ -1,29 +1,26 @@
-import { baseApi } from "../../api/baseApi";
+﻿import { baseApi } from "../../api/baseApi";
 import { tagTypes } from "../../tag-types";
 
 const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     loginUser: builder.mutation({
-      query: (formData) => {
-        return {
-          url: "/auth/login",
-          method: "POST",
-          data: formData,
-        };
-      },
+      query: (formData) => ({
+        url: "/auth/login",
+        method: "POST",
+        data: formData,
+      }),
       invalidatesTags: [tagTypes.auth],
     }),
 
     LogOut: builder.mutation({
-      query: () => {
-        return {
-          url: "/auth/logout",
-          method: "POST",
-        };
-      },
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
       invalidatesTags: [tagTypes.auth],
     }),
-     getSession: builder.query({
+
+    getSession: builder.query({
       query: () => ({
         url: "/auth/session",
         method: "GET",
@@ -32,54 +29,56 @@ const authApi = baseApi.injectEndpoints({
     }),
 
     sendOtp: builder.mutation({
-      query: (formData) => {
-        return {
-          url: "/auth/send-otp",
-          method: "POST",
-          data: formData,
-        };
-      },
+      query: (formData) => ({
+        url: "/auth/send-otp",
+        method: "POST",
+        data: formData,
+      }),
       invalidatesTags: [tagTypes.auth],
     }),
+
     verifyOtp: builder.mutation({
-      query: (formData) => {
-        return {
-          url: "/auth/verify-otp",
-          method: "POST",
-          data: formData,
-        };
-      },
+      query: (formData) => ({
+        url: "/auth/verify-otp",
+        method: "POST",
+        data: formData,
+      }),
       invalidatesTags: [tagTypes.auth],
     }),
+
     resendOtp: builder.mutation({
-      query: (formData) => {
-        return {
-          url: "/auth/resend-otp",
-          method: "POST",
-          data: formData,
-        };
-      },
+      query: (formData) => ({
+        url: "/auth/resend-otp",
+        method: "POST",
+        data: formData,
+      }),
       invalidatesTags: [tagTypes.auth],
     }),
 
     changePassword: builder.mutation({
-      query: ({ id, data }) => {
-        return {
-          url: `/auth/change-password/${id}`,
-          method: "PATCH",
-          data: data,
-        };
-      },
+      query: (data) => ({
+        url: "/auth/change-password",
+        method: "POST",
+        data,
+      }),
       invalidatesTags: [tagTypes.auth],
     }),
+
     forgetPassword: builder.mutation({
-      query: ({ data }) => {
-        return {
-          url: `/auth/forget-password`,
-          method: "PATCH",
-          data: data,
-        };
-      },
+      query: (data) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: [tagTypes.auth],
+    }),
+
+    resetPassword: builder.mutation({
+      query: (data) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        data,
+      }),
       invalidatesTags: [tagTypes.auth],
     }),
   }),
@@ -92,6 +91,7 @@ export const {
   useResendOtpMutation,
   useChangePasswordMutation,
   useForgetPasswordMutation,
+  useResetPasswordMutation,
   useLogOutMutation,
   useGetSessionQuery,
 } = authApi;
