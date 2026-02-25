@@ -1,13 +1,16 @@
 ﻿import { bannerSlides } from "@/public/banner";
 import Banner from "@/src/components/Banner/Banner";
+import Category from "@/src/components/Category/Category";
 import { getProducts } from "@/src/lib/api/catalog";
 
 export default async function Home() {
   const products = await getProducts().catch(() => []);
 
+
   return (
     <div className="space-y-8 py-2">
       <Banner slides={bannerSlides} autoPlayInterval={3000} showArrows={true} />
+      <Category />
 
       <section>
         <h2 className="text-2xl font-semibold text-slate-900 mb-4">Trending Products</h2>
