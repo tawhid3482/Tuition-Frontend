@@ -1,4 +1,4 @@
-﻿/* eslint-disable react-hooks/static-components */
+/* eslint-disable react-hooks/static-components */
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -31,6 +31,8 @@ import {
 import Image from "next/image";
 import Logo from "../../../app/assets/logo.png";
 import Link from "next/link";
+import { useGetAllCartQuery } from "@/src/redux/features/cart/cartApi";
+import { useGetAllWishlistQuery } from "@/src/redux/features/wish/wishListApi";
 
 // Nav items configuration
 interface NavItem {
@@ -72,8 +74,24 @@ export default function Navbar() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const wishlistCount = 3;
-  const cartCount = 2;
+    // Redux
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth,
+  );
+  const [logout] = useLogOutMutation();
+
+  const { data: cartLength, refetch: refetchCartCount } = useGetAllCartQuery(undefined, {
+    skip: !isAuthenticated,
+    refetchOnMountOrArgChange: true,
+  });
+  const { data: wishlistLength, refetch: refetchWishlistCount } = useGetAllWishlistQuery(undefined, {
+    skip: !isAuthenticated,
+    refetchOnMountOrArgChange: true,
+  });
+
+  const cartCount = cartLength?.data?.items?.length ?? cartLength?.items?.length ?? 0;
+  const wishlistCount =
+    wishlistLength?.data?.items?.length ?? wishlistLength?.data?.length ?? wishlistLength?.items?.length ?? 0;
 
   // Refs
   const searchRef = useRef<HTMLDivElement>(null);
@@ -81,12 +99,6 @@ export default function Navbar() {
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-
-  // Redux
-  const { isAuthenticated, user } = useSelector(
-    (state: RootState) => state.auth,
-  );
-  const [logout] = useLogOutMutation();
 
   // Notification APIs
   const {
@@ -138,6 +150,22 @@ export default function Navbar() {
       setActiveItem(currentItem.name);
     }
   }, [pathname]);
+    useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const handleCommerceUpdated = () => {
+      refetchCartCount();
+      refetchWishlistCount();
+    };
+
+    window.addEventListener("commerce-updated", handleCommerceUpdated);
+
+    return () => {
+      window.removeEventListener("commerce-updated", handleCommerceUpdated);
+    };
+  }, [isAuthenticated, pathname, refetchCartCount, refetchWishlistCount]);
 
   // Handle click outside
   useEffect(() => {
@@ -334,7 +362,7 @@ export default function Navbar() {
                 className="text-gray-500 hover:text-gray-700 ml-2"
                 aria-label="Close notifications"
               >
-                âœ•
+                ✕
               </button>
             </div>
           </div>
@@ -450,7 +478,7 @@ export default function Navbar() {
                 className="text-gray-500 hover:text-gray-700 ml-2"
                 aria-label="Close notifications"
               >
-                âœ•
+                ✕
               </button>
             </div>
           </div>
@@ -884,7 +912,9 @@ export default function Navbar() {
                 }`}
               >
                 <span className="mb-1">{item.icon}</span>
-                <span className="text-[11px] font-semibold leading-none">{item.name}</span>
+                <span className="text-[11px] font-semibold leading-none">
+                  {item.name}
+                </span>
               </Link>
             ))}
           </div>
@@ -1223,13 +1253,6 @@ export default function Navbar() {
     </>
   );
 }
-
-
-
-
-
-
-
 
 
 

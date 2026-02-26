@@ -5,6 +5,7 @@
   TutorRequest = "TutorRequest",
   platformControl = "platformControl",
   notification = "notification",
+  categories = "categories",
 }
 
 export const tagTypesList = [
@@ -14,4 +15,5 @@ export const tagTypesList = [
   tagTypes.TutorRequest,
   tagTypes.platformControl,
   tagTypes.notification,
+  tagTypes.categories,
 ];

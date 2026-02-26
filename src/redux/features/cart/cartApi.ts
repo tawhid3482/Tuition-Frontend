@@ -1,12 +1,12 @@
 import { baseApi } from "../../api/baseApi";
 import { tagTypes } from "../../tag-types";
 
-const CategoryApi = baseApi.injectEndpoints({
+const CartApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    createCategory: builder.mutation({
+    createCart: builder.mutation({
       query: (formData) => {
         return {
-          url: "/categories/create",
+          url: "/cart/add",
           method: "POST",
           data: formData,
         };
@@ -15,9 +15,9 @@ const CategoryApi = baseApi.injectEndpoints({
     }),
 
 
-    getAllCategory: builder.query({
+    getAllCart: builder.query({
       query: () => ({
-        url: `/categories`,
+        url: `/cart/me`,
         method: "GET",
       }),
       providesTags: [tagTypes.categories],
@@ -27,7 +27,7 @@ const CategoryApi = baseApi.injectEndpoints({
 });
 
 export const {
-useCreateCategoryMutation,
-useGetAllCategoryQuery 
+useCreateCartMutation,
+useGetAllCartQuery 
 
-} = CategoryApi;
+} = CartApi;

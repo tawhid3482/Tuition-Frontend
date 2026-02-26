@@ -1,12 +1,12 @@
 import { baseApi } from "../../api/baseApi";
 import { tagTypes } from "../../tag-types";
 
-const CategoryApi = baseApi.injectEndpoints({
+const WishlistApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    createCategory: builder.mutation({
+    createWishlist: builder.mutation({
       query: (formData) => {
         return {
-          url: "/categories/create",
+          url: "/wishlist/add",
           method: "POST",
           data: formData,
         };
@@ -15,9 +15,9 @@ const CategoryApi = baseApi.injectEndpoints({
     }),
 
 
-    getAllCategory: builder.query({
+    getAllWishlist: builder.query({
       query: () => ({
-        url: `/categories`,
+        url: `/wishlist/me`,
         method: "GET",
       }),
       providesTags: [tagTypes.categories],
@@ -27,7 +27,7 @@ const CategoryApi = baseApi.injectEndpoints({
 });
 
 export const {
-useCreateCategoryMutation,
-useGetAllCategoryQuery 
+useCreateWishlistMutation,
+useGetAllWishlistQuery 
 
-} = CategoryApi;
+} = WishlistApi;
