@@ -23,6 +23,7 @@ export type Category = {
   id: string;
   name: string;
   image?: string;
+  activeProductCount?: number;
   status?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
 };
 
@@ -396,3 +397,5 @@ export const getRelatedProductsByCategoryId = async (categoryId: string) => {
   const payload = await request<unknown>(`/products/related-products/${trimmedCategoryId}`);
   return normalizeProducts(payload);
 };
+
+

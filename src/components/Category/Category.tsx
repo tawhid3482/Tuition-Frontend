@@ -67,7 +67,7 @@ const Category = async () => {
                     {category.name}
                   </h3>
                   <p className="text-sm text-slate-100">
-                    {category.activeProductCount} products
+                    {category.activeProductCount ?? 0} products
                   </p>
                 </div>
               </div>
@@ -80,3 +80,4 @@ const Category = async () => {
 };
 
 export default Category;
+
