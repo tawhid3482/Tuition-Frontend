@@ -33,6 +33,7 @@ import Logo from "../../../app/assets/logo.png";
 import Link from "next/link";
 import { useGetAllCartQuery } from "@/src/redux/features/cart/cartApi";
 import { useGetAllWishlistQuery } from "@/src/redux/features/wish/wishListApi";
+import { getDashboardPathByRole } from "@/src/lib/auth/dashboardRole";
 
 // Nav items configuration
 interface NavItem {
@@ -92,6 +93,8 @@ export default function Navbar() {
   const cartCount = cartLength?.data?.items?.length ?? cartLength?.items?.length ?? 0;
   const wishlistCount =
     wishlistLength?.data?.items?.length ?? wishlistLength?.data?.length ?? wishlistLength?.items?.length ?? 0;
+
+  const dashboardPath = getDashboardPathByRole(user?.role);
 
   // Refs
   const searchRef = useRef<HTMLDivElement>(null);
@@ -221,10 +224,18 @@ export default function Navbar() {
   // Handlers
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      console.log("Searching for:", searchQuery);
-      setSearchOpen(false);
+
+    const normalizedQuery = searchQuery.trim();
+    if (!normalizedQuery) {
+      return;
     }
+
+    const query = new URLSearchParams();
+    query.set("searchTerm", normalizedQuery);
+    
+    router.push(`/shop?${query.toString()}`);
+    setSearchOpen(false);
+    setSearchQuery("");
   };
 
   const handleItemClick = (itemName: string) => {
@@ -235,7 +246,6 @@ export default function Navbar() {
     setNotificationOpen(false);
     setProfileDropdownOpen(false);
   };
-
   const toggleDropdown = (itemName: string, type: "navbar" | "bottom") => {
     if (type === "navbar") {
       setDropdownOpen(dropdownOpen === itemName ? null : itemName);
@@ -771,7 +781,7 @@ export default function Navbar() {
                           </p>
                         </div>
                         <Link
-                          href="/dashboard"
+                          href={dashboardPath}
                           className="flex items-center px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200"
                           onClick={() => setProfileDropdownOpen(false)}
                         >
@@ -1036,7 +1046,7 @@ export default function Navbar() {
                     <div
                       className="px-4 py-1"
                       onClick={() => {
-                        handleMobileNavigation("/dashboard", "Dashboard");
+                        handleMobileNavigation(dashboardPath, "Dashboard");
                         setBottomDropdownOpen(null);
                       }}
                     >
@@ -1230,7 +1240,7 @@ export default function Navbar() {
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <div
                     onClick={() =>
-                      handleMobileNavigation("/dashboard", "Dashboard")
+                      handleMobileNavigation(dashboardPath, "Dashboard")
                     }
                     className="w-full bg-primary text-white px-3 py-2.5 rounded-lg hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow flex items-center justify-center space-x-2 mb-2 cursor-pointer"
                   >

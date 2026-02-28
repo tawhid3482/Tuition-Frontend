@@ -169,8 +169,20 @@ export default function CartPage() {
       </div>
 
       {loading ? (
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600 shadow-sm">
-          Loading cart...
+        <div className="mt-6 space-y-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={`cart-loading-${index}`} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="h-20 w-20 rounded-xl bg-slate-200 animate-pulse" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-2/3 rounded bg-slate-200 animate-pulse" />
+                  <div className="h-3 w-1/3 rounded bg-slate-200 animate-pulse" />
+                  <div className="h-3 w-1/2 rounded bg-slate-200 animate-pulse" />
+                </div>
+                <div className="h-9 w-28 rounded-full bg-slate-200 animate-pulse" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : rows.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
@@ -306,3 +318,4 @@ export default function CartPage() {
     </section>
   );
 }
+

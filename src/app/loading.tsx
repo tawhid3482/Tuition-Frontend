@@ -1,18 +1,23 @@
-import Image from "next/image";
-import React from "react";
-
-const loading = () => {
+const Loading = () => {
   return (
-    <div className="w-64 mx-auto ">
-      <Image
-        src="https://i.gifer.com/origin/34/34338d26023e5515f6cc8969aa027bca_w200.gif"
-        width={200}
-        height={200}
-        alt="loading"
-        className="w-96 mx-auto mt-20"
-      />
-    </div>
+    <section className="py-10">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="h-10 w-64 rounded bg-slate-200 animate-pulse" />
+        <div className="mt-3 h-4 w-96 max-w-full rounded bg-slate-200 animate-pulse" />
+
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={`root-loading-${index}`} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="aspect-[4/3] rounded-xl bg-slate-200 animate-pulse" />
+              <div className="mt-4 h-5 w-3/4 rounded bg-slate-200 animate-pulse" />
+              <div className="mt-2 h-4 w-full rounded bg-slate-200 animate-pulse" />
+              <div className="mt-2 h-4 w-2/3 rounded bg-slate-200 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };
 
-export default loading;
+export default Loading;

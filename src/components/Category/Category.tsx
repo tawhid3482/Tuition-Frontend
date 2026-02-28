@@ -11,7 +11,6 @@ const toCategorySlug = (name: string) =>
 
 const Category = async () => {
   const [categories] = await Promise.all([getCategories()]);
-  console.log(categories);
 
   if (categories.length === 0) {
     return null;

@@ -1,9 +1,21 @@
-﻿import { authKey } from "@/src/contants/authKey";
+import { authKey } from "@/src/contants/authKey";
 import { instance } from "@/src/helpers/axios/axiosInstance";
 import { getFromLocalStorage } from "@/src/utils/local-storage";
 
 type ApiEnvelope<T> = {
   data?: T;
+  meta?: unknown;
+};
+
+type PaginatedResult<T> = {
+  data: T;
+  meta: unknown;
+};
+
+export type ReviewPayload = {
+  productId: string;
+  rating: number;
+  comment: string;
 };
 
 const getAuthHeaders = () => {
@@ -26,6 +38,22 @@ const unwrapResponse = <T>(response: { data?: ApiEnvelope<T> | T }): T => {
   }
 
   return payload as T;
+};
+
+const unwrapResponseWithMeta = <T>(response: { data?: ApiEnvelope<T> | T }): PaginatedResult<T> => {
+  const payload = response?.data;
+
+  if (payload && typeof payload === "object" && "data" in (payload as ApiEnvelope<T>)) {
+    return {
+      data: (payload as ApiEnvelope<T>).data as T,
+      meta: (payload as ApiEnvelope<T>).meta ?? null,
+    };
+  }
+
+  return {
+    data: payload as T,
+    meta: null,
+  };
 };
 
 export const addToCart = async (productId: string, quantity = 1) => {
@@ -78,6 +106,43 @@ export const getMyWishlist = async () => {
 
 export const removeFromWishlist = async (productId: string) => {
   const response = await instance.delete(`/wishlist/remove/${productId}`, {
+    headers: getAuthHeaders(),
+  });
+
+  return unwrapResponse(response);
+};
+
+export const createReview = async (payload: ReviewPayload) => {
+  const response = await instance.post("/reviews/create", payload, {
+    headers: getAuthHeaders(),
+  });
+
+  return unwrapResponse(response);
+};
+
+export const getProductReviews = async (productId: string, page = 1, limit = 10) => {
+  const response = await instance.get(`/reviews/product/${productId}?page=${page}&limit=${limit}`);
+  return unwrapResponseWithMeta(response);
+};
+
+export const getMyReviews = async (page = 1, limit = 10) => {
+  const response = await instance.get(`/reviews/me?page=${page}&limit=${limit}`, {
+    headers: getAuthHeaders(),
+  });
+
+  return unwrapResponseWithMeta(response);
+};
+
+export const updateReview = async (reviewId: string, payload: Pick<ReviewPayload, "rating" | "comment">) => {
+  const response = await instance.patch(`/reviews/update/${reviewId}`, payload, {
+    headers: getAuthHeaders(),
+  });
+
+  return unwrapResponse(response);
+};
+
+export const deleteReview = async (reviewId: string) => {
+  const response = await instance.delete(`/reviews/delete/${reviewId}`, {
     headers: getAuthHeaders(),
   });
 

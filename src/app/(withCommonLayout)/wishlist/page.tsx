@@ -134,7 +134,24 @@ export default function WishlistPage() {
       </div>
 
       {loading ? (
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600 shadow-sm">Loading wishlist...</div>
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={`wishlist-loading-${index}`} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="h-20 w-20 rounded-xl bg-slate-200 animate-pulse" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-3/4 rounded bg-slate-200 animate-pulse" />
+                  <div className="h-4 w-1/3 rounded bg-slate-200 animate-pulse" />
+                  <div className="h-5 w-24 rounded-full bg-slate-200 animate-pulse" />
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="h-10 rounded-xl bg-slate-200 animate-pulse" />
+                <div className="h-10 rounded-xl bg-slate-200 animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : rows.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
           <Heart className="mx-auto h-10 w-10 text-slate-400" />
@@ -198,3 +215,4 @@ export default function WishlistPage() {
     </section>
   );
 }
+
