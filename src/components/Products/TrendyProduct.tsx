@@ -28,7 +28,7 @@ const TrendyProduct = async () => {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">Fresh picks</p>
             <h2 id="trending-products" className="mt-2 text-2xl font-bold md:text-3xl">
-              Trending Products by Category
+              Latest Products by Category
             </h2>
             <p className="mt-2 text-sm text-slate-200">Auto-updated from latest category products.</p>
           </div>

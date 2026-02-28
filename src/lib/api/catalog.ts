@@ -20,6 +20,7 @@ export type Product = {
 };
 
 export type Category = {
+  activeProductCount: ReactNode;
   id: string;
   name: string;
   image?: string;
