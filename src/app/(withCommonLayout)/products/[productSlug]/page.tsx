@@ -12,6 +12,7 @@ import {
   getRelatedProductsByCategoryId,
 } from "@/src/lib/api/catalog";
 import { getProductDetailsPath } from "@/src/lib/productSlug";
+import { formatPriceBDT } from "@/src/lib/formatCurrency";
 import { FaArrowLeft } from "react-icons/fa";
 
 type ProductDetailsPageProps = {
@@ -22,13 +23,6 @@ type ProductDetailsPageProps = {
     pid?: string;
   }>;
 };
-
-const formatPrice = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(value);
 
 const isObjectIdLike = (value: string) => /^[a-f0-9]{24}$/i.test(value);
 
@@ -142,7 +136,7 @@ export default async function ProductDetailsPage({
 
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <p className="text-3xl font-bold text-slate-900">
-              {formatPrice(product.price)}
+              {formatPriceBDT(product.price)}
             </p>
             <p className="mt-2 text-sm text-slate-600">
               {product.stock > 0
@@ -201,7 +195,7 @@ export default async function ProductDetailsPage({
                   <h3 className="line-clamp-1 text-base font-semibold text-slate-900">{item.name}</h3>
                   <p className="line-clamp-2 text-sm text-slate-600">{item.description}</p>
                   <div className="flex items-center justify-between pt-1">
-                    <p className="text-lg font-bold text-slate-900">{formatPrice(item.price)}</p>
+                    <p className="text-lg font-bold text-slate-900">{formatPriceBDT(item.price)}</p>
                     <span
                       className={`rounded-full px-2 py-1 text-xs ${
                         item.stock > 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
@@ -227,3 +221,5 @@ export default async function ProductDetailsPage({
     </section>
   );
 }
+
+

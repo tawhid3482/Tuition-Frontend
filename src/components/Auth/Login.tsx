@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -62,8 +62,9 @@ const Login = () => {
       return;
     }
 
+    const loadingToast = toast.loading("Signing in...");
+
     try {
-      const loadingToast = toast.loading("Signing in...");
       await loginUser({ email: formData.email, password: formData.password }).unwrap();
       toast.dismiss(loadingToast);
 
@@ -76,9 +77,12 @@ const Login = () => {
       }
 
       toast.success("Successfully logged in");
-      router.push("/");
-      router.refresh();
+      setTimeout(() => {
+        router.push("/");
+        router.refresh();
+      }, 500);
     } catch (err: any) {
+      toast.dismiss(loadingToast);
       const errorMessage = err?.data?.message || "Login failed. Please try again.";
       toast.error(errorMessage);
     }
@@ -167,7 +171,7 @@ const Login = () => {
           </form>
 
           <div className="mt-6 pt-4 border-t border-gray-200 text-center text-xs text-gray-600">
-            Don&apos;t have an account? {" "}
+            Don&apos;t have an account?{" "}
             <Link href="/registration" className="text-primary font-medium hover:text-primary/80">
               Create one
             </Link>
@@ -179,4 +183,3 @@ const Login = () => {
 };
 
 export default Login;
-

@@ -3,13 +3,7 @@ import Link from "next/link";
 import ProductActionPanel from "@/src/components/Products/ProductActionPanel";
 import { getTrendingCategoryProducts } from "@/src/lib/api/catalog";
 import { getProductDetailsPath } from "@/src/lib/productSlug";
-
-const formatPrice = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(value);
+import { formatPriceBDT } from "@/src/lib/formatCurrency";
 
 const toCategorySlug = (name: string) =>
   name
@@ -106,7 +100,7 @@ const TrendyProduct = async () => {
                           <h4 className="line-clamp-1 text-base font-semibold text-slate-900">{item.name}</h4>
                           <p className="line-clamp-2 text-sm text-slate-600">{item.description}</p>
                           <div className="flex items-center justify-between pt-1">
-                            <p className="text-lg font-bold text-slate-900">{formatPrice(item.price)}</p>
+                            <p className="text-lg font-bold text-slate-900">{formatPriceBDT(item.price)}</p>
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 item.stock > 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
@@ -138,4 +132,6 @@ const TrendyProduct = async () => {
 };
 
 export default TrendyProduct;
+
+
 

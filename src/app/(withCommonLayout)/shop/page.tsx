@@ -4,6 +4,7 @@ import Link from "next/link";
 import ProductActionPanel from "@/src/components/Products/ProductActionPanel";
 import { getCategories, getProductsWithMeta } from "@/src/lib/api/catalog";
 import { getProductDetailsPath } from "@/src/lib/productSlug";
+import { formatPriceBDT } from "@/src/lib/formatCurrency";
 
 export const metadata: Metadata = {
   title: "Shop Products",
@@ -53,13 +54,6 @@ const toCategorySlug = (name: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
-
-const formatPrice = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(value);
 
 const parsePositiveNumber = (value?: string) => {
   if (!value) {
@@ -371,7 +365,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
                   <p className="mt-2 line-clamp-2 text-sm text-slate-600">{product.description}</p>
 
                   <div className="mt-4 flex items-center justify-between">
-                    <p className="text-xl font-bold text-slate-900">{formatPrice(product.price)}</p>
+                    <p className="text-xl font-bold text-slate-900">{formatPriceBDT(product.price)}</p>
                     <span
                       className={`rounded-full px-2 py-1 text-xs ${
                         product.stock > 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
@@ -446,3 +440,5 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     </section>
   );
 }
+
+

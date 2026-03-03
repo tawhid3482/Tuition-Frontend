@@ -1,4 +1,4 @@
-﻿import { baseApi } from "../../api/baseApi";
+import { baseApi } from "../../api/baseApi";
 import { tagTypes } from "../../tag-types";
 
 const authApi = baseApi.injectEndpoints({
@@ -81,6 +81,15 @@ const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.auth],
     }),
+
+    updateProfile: builder.mutation({
+      query: (data) => ({
+        url: "/auth/update-profile",
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: [tagTypes.auth],
+    }),
   }),
 });
 
@@ -92,6 +101,8 @@ export const {
   useChangePasswordMutation,
   useForgetPasswordMutation,
   useResetPasswordMutation,
+  useUpdateProfileMutation,
   useLogOutMutation,
   useGetSessionQuery,
 } = authApi;
+

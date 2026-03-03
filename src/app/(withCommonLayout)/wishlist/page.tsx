@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { addToCart, getMyWishlist, removeFromWishlist } from "@/src/lib/api/commerceClient";
 import { getProductDetailsPath } from "@/src/lib/productSlug";
+import { formatPriceBDT } from "@/src/lib/formatCurrency";
 
 type WishlistRow = {
   productId: string;
@@ -15,13 +16,6 @@ type WishlistRow = {
   stock: number;
   image?: string;
 };
-
-const formatPrice = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(value);
 
 const normalizeWishlist = (payload: unknown): WishlistRow[] => {
   const root = payload as { items?: unknown[]; data?: { items?: unknown[] } } | unknown[];
@@ -179,7 +173,7 @@ export default function WishlistPage() {
                     <Link href={getProductDetailsPath(row.name, row.productId)} className="line-clamp-2 text-base font-semibold text-slate-900 transition hover:text-primary">
                       {row.name}
                     </Link>
-                    <p className="mt-1 text-sm font-semibold text-slate-800">{formatPrice(row.price)}</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-800">{formatPriceBDT(row.price)}</p>
                     <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${inStock ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" : "bg-rose-50 text-rose-700 ring-1 ring-rose-200"}`}>
                       {inStock ? `${row.stock} in stock` : "Out of stock"}
                     </span>
@@ -215,4 +209,6 @@ export default function WishlistPage() {
     </section>
   );
 }
+
+
 
