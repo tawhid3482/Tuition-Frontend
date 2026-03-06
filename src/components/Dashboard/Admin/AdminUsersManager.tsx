@@ -28,29 +28,31 @@ const normalizeUsers = (payload: unknown): UserRow[] => {
           ? source.data
           : [];
 
-  return list
-    .map((item) => {
-      const row = item as {
-        id?: string;
-        _id?: string;
-        name?: string;
-        email?: string;
-        role?: string;
-        createdAt?: string;
-      };
+  return list.reduce<UserRow[]>((acc, item) => {
+    const row = item as {
+      id?: string;
+      _id?: string;
+      name?: string;
+      email?: string;
+      role?: string;
+      createdAt?: string;
+    };
 
-      const id = row.id || row._id;
-      if (!id) return null;
+    const id = row.id || row._id;
+    if (!id) {
+      return acc;
+    }
 
-      return {
-        id,
-        name: row.name || "-",
-        email: row.email || "-",
-        role: row.role || "USER",
-        createdAt: row.createdAt,
-      };
-    })
-    .filter((row): row is UserRow => Boolean(row));
+    acc.push({
+      id,
+      name: row.name || "-",
+      email: row.email || "-",
+      role: row.role || "USER",
+      createdAt: row.createdAt,
+    });
+
+    return acc;
+  }, []);
 };
 
 const getRoleClass = (role: string) => {
@@ -170,3 +172,4 @@ export default function AdminUsersManager() {
     </section>
   );
 }
+

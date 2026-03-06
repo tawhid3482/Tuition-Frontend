@@ -29,31 +29,33 @@ const normalizeContacts = (payload: unknown): ContactRow[] => {
           ? source.data
           : [];
 
-  return list
-    .map((item) => {
-      const row = item as {
-        id?: string;
-        _id?: string;
-        name?: string;
-        email?: string;
-        subject?: string;
-        message?: string;
-        createdAt?: string;
-      };
+  return list.reduce<ContactRow[]>((acc, item) => {
+    const row = item as {
+      id?: string;
+      _id?: string;
+      name?: string;
+      email?: string;
+      subject?: string;
+      message?: string;
+      createdAt?: string;
+    };
 
-      const id = row.id || row._id;
-      if (!id) return null;
+    const id = row.id || row._id;
+    if (!id) {
+      return acc;
+    }
 
-      return {
-        id,
-        name: row.name || "-",
-        email: row.email || "-",
-        subject: row.subject,
-        message: row.message || "",
-        createdAt: row.createdAt,
-      };
-    })
-    .filter((row): row is ContactRow => Boolean(row));
+    acc.push({
+      id,
+      name: row.name || "-",
+      email: row.email || "-",
+      subject: row.subject,
+      message: row.message || "",
+      createdAt: row.createdAt,
+    });
+
+    return acc;
+  }, []);
 };
 
 export default function AdminContactsManager() {
@@ -144,3 +146,4 @@ export default function AdminContactsManager() {
     </section>
   );
 }
+
