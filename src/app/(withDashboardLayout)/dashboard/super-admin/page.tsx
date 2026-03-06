@@ -1,11 +1,14 @@
-import RoleDashboardPage from "@/src/components/Dashboard/RoleDashboardPage";
+import AdminDashboardShell from "@/src/components/Dashboard/Admin/AdminDashboardShell";
+import AdminOverview from "@/src/components/Dashboard/Admin/AdminOverview";
 
 export default function SuperAdminDashboardPage() {
   return (
-    <RoleDashboardPage
-      requiredRole="SUPER_ADMIN"
+    <AdminDashboardShell
+      scope="SUPER_ADMIN"
       title="Super Admin Dashboard"
-      description="Welcome to the super admin dashboard. Configure system-level settings and global administration."
-    />
+      description="Global administration with web settings and full platform control."
+    >
+      <AdminOverview scope="SUPER_ADMIN" />
+    </AdminDashboardShell>
   );
 }

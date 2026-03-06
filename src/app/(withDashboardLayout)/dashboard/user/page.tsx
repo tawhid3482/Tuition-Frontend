@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CreditCard, Package, Truck, Wallet } from "lucide-react";
 import UserDashboardShell from "@/src/components/Dashboard/User/UserDashboardShell";
 import { formatDateTime, normalizeOrders } from "@/src/components/Dashboard/User/orderUtils";
-import { getMyOrders, type Order } from "@/src/lib/api/commerceClient";
+import { getMyOrderStats, getMyOrders, type MyOrderStats, type Order } from "@/src/lib/api/commerceClient";
 import { formatPriceBDT } from "@/src/lib/formatCurrency";
 
 type StatCard = {
@@ -15,8 +15,14 @@ type StatCard = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
+const toSafeNumber = (value: unknown) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 export default function UserDashboardPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [statsData, setStatsData] = useState<MyOrderStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,25 +30,28 @@ export default function UserDashboardPage() {
 
     const load = async () => {
       setLoading(true);
-      try {
-        const payload = await getMyOrders();
-        if (!mounted) return;
 
-        const normalized = normalizeOrders(payload).sort((a, b) => {
+      const [ordersRes, statsRes] = await Promise.allSettled([
+        getMyOrders(),
+        getMyOrderStats(),
+      ]);
+
+      if (!mounted) return;
+
+      if (ordersRes.status === "fulfilled") {
+        const normalized = normalizeOrders(ordersRes.value).sort((a, b) => {
           const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return bDate - aDate;
         });
 
         setOrders(normalized);
-      } catch {
-        if (!mounted) return;
+      } else {
         setOrders([]);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
       }
+
+      setStatsData(statsRes.status === "fulfilled" ? statsRes.value : null);
+      setLoading(false);
     };
 
     load();
@@ -53,18 +62,18 @@ export default function UserDashboardPage() {
   }, []);
 
   const stats = useMemo<StatCard[]>(() => {
-    const totalOrders = orders.length;
-    const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-    const pendingOrders = orders.filter((order) => ["PENDING", "CONFIRMED", "SHIPPED"].includes(order.status)).length;
-    const paidOrders = orders.filter((order) => (order.paymentStatus || "").toUpperCase() === "PAID").length;
+    const totalOrders = toSafeNumber(statsData?.totalOrders);
+    const totalSpent = toSafeNumber(statsData?.totalSpent);
+    const activeDeliveries = toSafeNumber(statsData?.activeDeliveries);
+    const paidOrders = toSafeNumber(statsData?.paidOrders);
 
     return [
       { id: "totalOrders", label: "Total Orders", value: String(totalOrders), icon: Package },
       { id: "totalSpent", label: "Total Spent", value: formatPriceBDT(totalSpent), icon: Wallet },
-      { id: "pendingOrders", label: "Active Deliveries", value: String(pendingOrders), icon: Truck },
+      { id: "activeDeliveries", label: "Active Deliveries", value: String(activeDeliveries), icon: Truck },
       { id: "paidOrders", label: "Paid Orders", value: String(paidOrders), icon: CreditCard },
     ];
-  }, [orders]);
+  }, [statsData?.activeDeliveries, statsData?.paidOrders, statsData?.totalOrders, statsData?.totalSpent]);
 
   const recentOrders = orders.slice(0, 5);
 

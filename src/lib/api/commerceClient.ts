@@ -32,6 +32,28 @@ export type CheckoutPayload = {
 export type CheckoutResult = {
   id?: string;
   orderId?: string;
+  order?: {
+    id?: string;
+  };
+  payment?: {
+    paymentRequired?: boolean;
+    gateway?: string;
+    nextStep?: string;
+    session?: {
+      sessionKey?: string;
+      amount?: number;
+      currency?: string;
+      paymentUrl?: string;
+    };
+  };
+  pricing?: {
+    subtotal?: number;
+    deliveryFee?: number;
+    discountPercentage?: number;
+    discountAmount?: number;
+    totalAmount?: number;
+    appliedPromoCode?: string | null;
+  };
   subtotal?: number;
   deliveryFee?: number;
   discountPercentage?: number;
@@ -41,9 +63,16 @@ export type CheckoutResult = {
 };
 
 export type SslInitResult = {
+  gateway?: string;
   gatewayUrl?: string;
   url?: string;
   redirectUrl?: string;
+  session?: {
+    sessionKey?: string;
+    amount?: number;
+    currency?: string;
+    paymentUrl?: string;
+  };
 };
 
 export type PromoApplyPayload = {
@@ -64,6 +93,13 @@ export type PromoApplyResult = {
     discountAmount?: number;
     totalAmount?: number;
   };
+};
+
+export type MyOrderStats = {
+  totalOrders?: number;
+  totalSpent?: number;
+  activeDeliveries?: number;
+  paidOrders?: number;
 };
 
 export const ORDER_STATUSES = [
@@ -93,6 +129,17 @@ export type OrderItem = {
   price: number;
   createdAt?: string;
   product?: OrderItemProduct;
+};
+
+export type PaymentHistory = {
+  id?: string;
+  transactionId?: string | null;
+  amount?: number;
+  status?: string;
+  method?: string;
+  gateway?: string;
+  createdAt?: string;
+  paidAt?: string | null;
 };
 
 export type Order = {
@@ -127,15 +174,22 @@ export type Order = {
     name?: string;
     email?: string;
   };
+  paymentHistories?: PaymentHistory[];
 };
 
 export type OrderQueryParams = {
   page?: number;
   limit?: number;
-  status?: string;
+  status?: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+  paymentStatus?: "UNPAID" | "PENDING" | "PAID" | "FAILED" | "REFUNDED";
+  paymentMethod?: "COD" | "SSLCOMMERZ";
+  searchTerm?: string;
+  minTotal?: number;
+  maxTotal?: number;
+  fromDate?: string;
+  toDate?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  searchTerm?: string;
 };
 
 export type OrderListMeta = {
@@ -240,9 +294,14 @@ export const applyPromoCode = async (payload: PromoApplyPayload) => {
   return unwrapResponse<PromoApplyResult>(response);
 };
 
+
 export const getMyOrders = async () => {
   const response = await instance.get("/orders/me", { headers: getAuthHeaders() });
   return unwrapResponse(response);
+};
+export const getMyOrderStats = async () => {
+  const response = await instance.get("/orders/me/stats", { headers: getAuthHeaders() });
+  return unwrapResponse<MyOrderStats>(response);
 };
 
 export const getMyOrdersPaginated = async (params: OrderQueryParams = {}) => {
@@ -328,3 +387,8 @@ export const deleteReview = async (reviewId: string) => {
 
   return unwrapResponse(response);
 };
+
+
+
+
+

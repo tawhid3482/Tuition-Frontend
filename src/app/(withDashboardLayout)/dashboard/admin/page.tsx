@@ -1,11 +1,14 @@
-import RoleDashboardPage from "@/src/components/Dashboard/RoleDashboardPage";
+import AdminDashboardShell from "@/src/components/Dashboard/Admin/AdminDashboardShell";
+import AdminOverview from "@/src/components/Dashboard/Admin/AdminOverview";
 
 export default function AdminDashboardPage() {
   return (
-    <RoleDashboardPage
-      requiredRole="ADMIN"
+    <AdminDashboardShell
+      scope="ADMIN"
       title="Admin Dashboard"
-      description="Welcome to the admin dashboard. Monitor platform activity and manage core operations."
-    />
+      description="Operations, orders, users, contacts, promo codes and catalog control in one place."
+    >
+      <AdminOverview scope="ADMIN" />
+    </AdminDashboardShell>
   );
 }

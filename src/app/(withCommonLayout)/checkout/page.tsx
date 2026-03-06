@@ -61,6 +61,8 @@ const defaultCheckoutForm: CheckoutForm = {
   promoCode: "",
 };
 
+const PENDING_SSL_ORDER_KEY = "pendingSslOrderId";
+
 const normalizeRows = (payload: unknown): CartRow[] => {
   const root = payload as
     | { items?: unknown[]; data?: { items?: unknown[] } }
@@ -118,15 +120,38 @@ const extractPricing = (
   fallbackSubtotal: number,
   fallbackDeliveryFee: number,
 ): CheckoutPricing => {
-  const subtotal = typeof checkoutResult.subtotal === "number" ? checkoutResult.subtotal : fallbackSubtotal;
-  const deliveryFee = typeof checkoutResult.deliveryFee === "number" ? checkoutResult.deliveryFee : fallbackDeliveryFee;
-  const discountAmount =
-    typeof checkoutResult.discountAmount === "number" ? checkoutResult.discountAmount : 0;
-  const discountPercentage =
-    typeof checkoutResult.discountPercentage === "number" ? checkoutResult.discountPercentage : 0;
+  const pricing = checkoutResult.pricing;
+
+  const subtotal = typeof pricing?.subtotal === "number"
+    ? pricing.subtotal
+    : typeof checkoutResult.subtotal === "number"
+      ? checkoutResult.subtotal
+      : fallbackSubtotal;
+
+  const deliveryFee = typeof pricing?.deliveryFee === "number"
+    ? pricing.deliveryFee
+    : typeof checkoutResult.deliveryFee === "number"
+      ? checkoutResult.deliveryFee
+      : fallbackDeliveryFee;
+
+  const discountAmount = typeof pricing?.discountAmount === "number"
+    ? pricing.discountAmount
+    : typeof checkoutResult.discountAmount === "number"
+      ? checkoutResult.discountAmount
+      : 0;
+
+  const discountPercentage = typeof pricing?.discountPercentage === "number"
+    ? pricing.discountPercentage
+    : typeof checkoutResult.discountPercentage === "number"
+      ? checkoutResult.discountPercentage
+      : 0;
 
   const defaultTotal = Math.max(subtotal + deliveryFee - discountAmount, 0);
-  const totalAmount = typeof checkoutResult.totalAmount === "number" ? checkoutResult.totalAmount : defaultTotal;
+  const totalAmount = typeof pricing?.totalAmount === "number"
+    ? pricing.totalAmount
+    : typeof checkoutResult.totalAmount === "number"
+      ? checkoutResult.totalAmount
+      : defaultTotal;
 
   return {
     subtotal,
@@ -134,7 +159,10 @@ const extractPricing = (
     discountAmount,
     discountPercentage,
     totalAmount,
-    appliedPromoCode: checkoutResult.appliedPromoCode,
+    appliedPromoCode:
+      typeof pricing?.appliedPromoCode === "string"
+        ? pricing.appliedPromoCode
+        : checkoutResult.appliedPromoCode,
   };
 };
 
@@ -310,13 +338,40 @@ export default function CheckoutPage() {
 
   const resolvePaymentUrl = (payload: unknown) => {
     const data = payload as {
+      payment?: {
+        session?: { paymentUrl?: string };
+      };
+      session?: { paymentUrl?: string };
+      paymentUrl?: string;
       gatewayUrl?: string;
       url?: string;
       redirectUrl?: string;
-      data?: { gatewayUrl?: string; url?: string; redirectUrl?: string };
+      data?: {
+        payment?: {
+          session?: { paymentUrl?: string };
+        };
+        session?: { paymentUrl?: string };
+        paymentUrl?: string;
+        gatewayUrl?: string;
+        url?: string;
+        redirectUrl?: string;
+      };
     };
 
-    return data.gatewayUrl || data.url || data.redirectUrl || data.data?.gatewayUrl || data.data?.url || data.data?.redirectUrl;
+    return (
+      data.payment?.session?.paymentUrl ||
+      data.session?.paymentUrl ||
+      data.paymentUrl ||
+      data.gatewayUrl ||
+      data.url ||
+      data.redirectUrl ||
+      data.data?.payment?.session?.paymentUrl ||
+      data.data?.session?.paymentUrl ||
+      data.data?.paymentUrl ||
+      data.data?.gatewayUrl ||
+      data.data?.url ||
+      data.data?.redirectUrl
+    );
   };
 
   const handlePlaceOrder = async () => {
@@ -368,7 +423,17 @@ export default function CheckoutPage() {
       }
 
       if (checkoutForm.paymentMethod === "SSLCOMMERZ") {
-        const orderId = result.orderId || result.id;
+        const orderId = result.order?.id || result.orderId || result.id;
+        const directPaymentUrl = resolvePaymentUrl(result);
+
+        if (directPaymentUrl) {
+          if (orderId) {
+            localStorage.setItem(PENDING_SSL_ORDER_KEY, orderId);
+          }
+
+          window.location.assign(directPaymentUrl);
+          return;
+        }
 
         if (!orderId) {
           toast.error("Order created but payment init failed. Missing order id.");
@@ -376,20 +441,21 @@ export default function CheckoutPage() {
         }
 
         const paymentInitResponse = await initSslPayment(orderId);
-        const paymentUrl = resolvePaymentUrl(paymentInitResponse);
+        const fallbackPaymentUrl = resolvePaymentUrl(paymentInitResponse);
 
-        if (!paymentUrl) {
+        if (!fallbackPaymentUrl) {
           toast.error("Payment initialization failed. Please try again.");
           return;
         }
 
-        window.location.assign(paymentUrl);
+        localStorage.setItem(PENDING_SSL_ORDER_KEY, orderId);
+        window.location.assign(fallbackPaymentUrl);
         return;
       }
 
       toast.success("Order placed successfully");
       window.dispatchEvent(new Event("commerce-updated"));
-      router.push("/orders");
+      router.push("/dashboard/user/orders");
       router.refresh();
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, "Checkout failed"));
@@ -680,3 +746,5 @@ export default function CheckoutPage() {
     </section>
   );
 }
+
+

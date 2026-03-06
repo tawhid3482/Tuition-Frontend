@@ -7,6 +7,17 @@ import { formatDateTime, normalizeOrders } from "@/src/components/Dashboard/User
 import { getMyOrders, type Order } from "@/src/lib/api/commerceClient";
 import { formatPriceBDT } from "@/src/lib/formatCurrency";
 
+type PaymentRow = {
+  key: string;
+  orderId: string;
+  transactionId?: string | null;
+  amount: number;
+  method: string;
+  gateway?: string;
+  status: string;
+  paidAt?: string | null;
+};
+
 export default function UserPaymentsPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,17 +53,39 @@ export default function UserPaymentsPage() {
     };
   }, []);
 
-  const paymentRows = useMemo(
-    () =>
-      orders.map((order) => ({
+  const paymentRows = useMemo<PaymentRow[]>(() => {
+    const withHistories = orders.flatMap((order) => {
+      if (!Array.isArray(order.paymentHistories) || order.paymentHistories.length === 0) {
+        return [] as PaymentRow[];
+      }
+
+      return order.paymentHistories.map((history, index) => ({
+        key: `${order.id}-${history.id || history.transactionId || index}`,
         orderId: order.id,
-        amount: order.totalAmount,
-        method: order.paymentMethod || "COD",
-        status: (order.paymentStatus || "UNPAID").toUpperCase(),
-        paidAt: order.paidAt || order.updatedAt || order.createdAt,
-      })),
-    [orders],
-  );
+        transactionId: history.transactionId,
+        amount: typeof history.amount === "number" ? history.amount : order.totalAmount,
+        method: history.method || order.paymentMethod || "COD",
+        gateway: history.gateway || order.paymentGateway || undefined,
+        status: (history.status || order.paymentStatus || "UNPAID").toUpperCase(),
+        paidAt: history.paidAt || history.createdAt || order.paidAt || order.updatedAt || order.createdAt,
+      }));
+    });
+
+    if (withHistories.length > 0) {
+      return withHistories;
+    }
+
+    return orders.map((order) => ({
+      key: `${order.id}-${order.paymentStatus || "UNPAID"}-${order.paidAt || order.updatedAt || order.createdAt || "na"}`,
+      orderId: order.id,
+      transactionId: order.transactionId,
+      amount: order.totalAmount,
+      method: order.paymentMethod || "COD",
+      gateway: order.paymentGateway || undefined,
+      status: (order.paymentStatus || "UNPAID").toUpperCase(),
+      paidAt: order.paidAt || order.updatedAt || order.createdAt,
+    }));
+  }, [orders]);
 
   const totalPaid = useMemo(
     () => paymentRows.filter((row) => row.status === "PAID").reduce((sum, row) => sum + row.amount, 0),
@@ -79,11 +112,13 @@ export default function UserPaymentsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-sm">
+            <table className="w-full min-w-[820px] text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-left text-slate-500">
                   <th className="pb-2 pr-3 font-medium">Order ID</th>
+                  <th className="pb-2 pr-3 font-medium">Transaction ID</th>
                   <th className="pb-2 pr-3 font-medium">Method</th>
+                  <th className="pb-2 pr-3 font-medium">Gateway</th>
                   <th className="pb-2 pr-3 font-medium">Status</th>
                   <th className="pb-2 pr-3 font-medium">Date</th>
                   <th className="pb-2 font-medium">Amount</th>
@@ -93,12 +128,16 @@ export default function UserPaymentsPage() {
                 {paymentRows.map((row) => {
                   const statusClass = row.status === "PAID"
                     ? "bg-emerald-100 text-emerald-700"
-                    : "bg-amber-100 text-amber-700";
+                    : row.status === "FAILED"
+                      ? "bg-rose-100 text-rose-700"
+                      : "bg-amber-100 text-amber-700";
 
                   return (
-                    <tr key={`${row.orderId}-${row.status}-${row.paidAt || "na"}`} className="border-b border-slate-100 text-slate-700">
+                    <tr key={row.key} className="border-b border-slate-100 text-slate-700">
                       <td className="py-2 pr-3 font-medium text-slate-900">{row.orderId}</td>
+                      <td className="py-2 pr-3">{row.transactionId || "-"}</td>
                       <td className="py-2 pr-3 uppercase">{row.method}</td>
+                      <td className="py-2 pr-3 uppercase">{row.gateway || "-"}</td>
                       <td className="py-2 pr-3">
                         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}>{row.status}</span>
                       </td>

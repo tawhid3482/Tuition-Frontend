@@ -1,12 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import UserDashboardShell from "@/src/components/Dashboard/User/UserDashboardShell";
 import { formatDateTime, normalizeOrders } from "@/src/components/Dashboard/User/orderUtils";
 import { getMyOrdersPaginated, type Order, type OrderListMeta } from "@/src/lib/api/commerceClient";
 import { formatPriceBDT } from "@/src/lib/formatCurrency";
+
+const PENDING_SSL_ORDER_KEY = "pendingSslOrderId";
 
 const statusClassMap: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-700",
@@ -21,9 +24,13 @@ const paymentStatusClassMap: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-700",
   UNPAID: "bg-slate-200 text-slate-700",
   FAILED: "bg-rose-100 text-rose-700",
+  REFUNDED: "bg-indigo-100 text-indigo-700",
 };
 
 const statusOptions = ["ALL", "PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"];
+const paymentStatusOptions = ["ALL", "UNPAID", "PENDING", "PAID", "FAILED", "REFUNDED"];
+const paymentMethodOptions = ["ALL", "COD", "SSLCOMMERZ"];
+
 const sortByOptions = [
   { value: "createdAt", label: "Created Time" },
   { value: "totalAmount", label: "Total Amount" },
@@ -39,11 +46,19 @@ export default function UserOrdersPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [status, setStatus] = useState("ALL");
+  const [paymentStatus, setPaymentStatus] = useState("ALL");
+  const [paymentMethod, setPaymentMethod] = useState("ALL");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [minTotal, setMinTotal] = useState("");
+  const [maxTotal, setMaxTotal] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [meta, setMeta] = useState<OrderListMeta>({});
+
+  const pendingStatusCheckedRef = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -63,16 +78,47 @@ export default function UserOrdersPage() {
         const response = await getMyOrdersPaginated({
           page,
           limit,
-          status: status === "ALL" ? undefined : status,
+          status: status === "ALL" ? undefined : (status as "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED"),
+          paymentStatus: paymentStatus === "ALL" ? undefined : (paymentStatus as "UNPAID" | "PENDING" | "PAID" | "FAILED" | "REFUNDED"),
+          paymentMethod: paymentMethod === "ALL" ? undefined : (paymentMethod as "COD" | "SSLCOMMERZ"),
           sortBy,
           sortOrder,
           searchTerm: searchTerm || undefined,
+          minTotal: minTotal ? Number(minTotal) : undefined,
+          maxTotal: maxTotal ? Number(maxTotal) : undefined,
+          fromDate: fromDate || undefined,
+          toDate: toDate || undefined,
         });
 
         if (!mounted) return;
 
-        setOrders(normalizeOrders(response.data));
+        const normalized = normalizeOrders(response.data);
+        setOrders(normalized);
         setMeta((response.meta || {}) as OrderListMeta);
+
+        if (!pendingStatusCheckedRef.current && typeof window !== "undefined") {
+          const pendingOrderId = localStorage.getItem(PENDING_SSL_ORDER_KEY);
+
+          if (pendingOrderId) {
+            const matched = normalized.find((order) => order.id === pendingOrderId);
+
+            if (matched) {
+              const statusText = (matched.paymentStatus || "PENDING").toUpperCase();
+              if (statusText === "PAID") {
+                toast.success(`Payment successful for order ${matched.id}`);
+              } else if (statusText === "FAILED") {
+                toast.error(`Payment failed for order ${matched.id}`);
+              } else {
+                toast(`Payment status: ${statusText} for order ${matched.id}`);
+              }
+
+              localStorage.removeItem(PENDING_SSL_ORDER_KEY);
+              pendingStatusCheckedRef.current = true;
+            }
+          } else {
+            pendingStatusCheckedRef.current = true;
+          }
+        }
       } catch {
         if (!mounted) return;
         setOrders([]);
@@ -87,7 +133,7 @@ export default function UserOrdersPage() {
     return () => {
       mounted = false;
     };
-  }, [page, limit, status, sortBy, sortOrder, searchTerm]);
+  }, [page, limit, status, paymentStatus, paymentMethod, sortBy, sortOrder, searchTerm, minTotal, maxTotal, fromDate, toDate]);
 
   const totalItems = useMemo(
     () => orders.reduce((sum, order) => sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0),
@@ -140,6 +186,94 @@ export default function UserOrdersPage() {
           </label>
 
           <label>
+            <span className="mb-1 block text-xs font-semibold text-slate-500">Payment Status</span>
+            <select
+              value={paymentStatus}
+              onChange={(e) => {
+                setPaymentStatus(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            >
+              {paymentStatusOptions.map((item) => (
+                <option key={item} value={item}>{item}</option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            <span className="mb-1 block text-xs font-semibold text-slate-500">Payment Method</span>
+            <select
+              value={paymentMethod}
+              onChange={(e) => {
+                setPaymentMethod(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            >
+              {paymentMethodOptions.map((item) => (
+                <option key={item} value={item}>{item}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
+          <label>
+            <span className="mb-1 block text-xs font-semibold text-slate-500">Min Total</span>
+            <input
+              type="number"
+              min={0}
+              value={minTotal}
+              onChange={(e) => {
+                setMinTotal(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+          </label>
+
+          <label>
+            <span className="mb-1 block text-xs font-semibold text-slate-500">Max Total</span>
+            <input
+              type="number"
+              min={0}
+              value={maxTotal}
+              onChange={(e) => {
+                setMaxTotal(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+          </label>
+
+          <label>
+            <span className="mb-1 block text-xs font-semibold text-slate-500">From Date</span>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => {
+                setFromDate(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+          </label>
+
+          <label>
+            <span className="mb-1 block text-xs font-semibold text-slate-500">To Date</span>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => {
+                setToDate(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+          </label>
+
+          <label>
             <span className="mb-1 block text-xs font-semibold text-slate-500">Sort By</span>
             <select
               value={sortBy}
@@ -170,6 +304,7 @@ export default function UserOrdersPage() {
                 <option value="asc">Asc</option>
               </select>
             </label>
+
             <label>
               <span className="mb-1 block text-xs font-semibold text-slate-500">Limit</span>
               <select
@@ -196,8 +331,8 @@ export default function UserOrdersPage() {
           <div className="space-y-4">
             {orders.map((order) => {
               const statusBadge = statusClassMap[order.status] || "bg-slate-100 text-slate-700";
-              const paymentStatus = (order.paymentStatus || "UNPAID").toUpperCase();
-              const paymentBadge = paymentStatusClassMap[paymentStatus] || "bg-slate-100 text-slate-700";
+              const paymentStatusText = (order.paymentStatus || "UNPAID").toUpperCase();
+              const paymentBadge = paymentStatusClassMap[paymentStatusText] || "bg-slate-100 text-slate-700";
               const isExpanded = expandedOrderId === order.id;
 
               return (
@@ -211,7 +346,7 @@ export default function UserOrdersPage() {
 
                     <div className="flex flex-wrap items-center gap-2">
                       <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusBadge}`}>{order.status}</span>
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${paymentBadge}`}>{paymentStatus}</span>
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${paymentBadge}`}>{paymentStatusText}</span>
                     </div>
                   </div>
 
@@ -262,6 +397,38 @@ export default function UserOrdersPage() {
                             : "-"}
                         </p>
                       </div>
+
+                      {Array.isArray(order.paymentHistories) && order.paymentHistories.length > 0 ? (
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900">Payment Histories</h3>
+                          <div className="mt-2 overflow-x-auto">
+                            <table className="w-full min-w-[680px] text-xs">
+                              <thead>
+                                <tr className="border-b border-slate-200 text-left text-slate-500">
+                                  <th className="py-2 pr-3 font-semibold">Transaction</th>
+                                  <th className="py-2 pr-3 font-semibold">Status</th>
+                                  <th className="py-2 pr-3 font-semibold">Method</th>
+                                  <th className="py-2 pr-3 font-semibold">Gateway</th>
+                                  <th className="py-2 pr-3 font-semibold">Amount</th>
+                                  <th className="py-2 font-semibold">Date</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {order.paymentHistories.map((history, index) => (
+                                  <tr key={`${order.id}-ph-${history.id || history.transactionId || index}`} className="border-b border-slate-100 text-slate-700">
+                                    <td className="py-2 pr-3">{history.transactionId || "-"}</td>
+                                    <td className="py-2 pr-3">{(history.status || "-").toUpperCase()}</td>
+                                    <td className="py-2 pr-3">{(history.method || "-").toUpperCase()}</td>
+                                    <td className="py-2 pr-3">{history.gateway || "-"}</td>
+                                    <td className="py-2 pr-3">{typeof history.amount === "number" ? formatPriceBDT(history.amount) : "-"}</td>
+                                    <td className="py-2">{formatDateTime(history.paidAt || history.createdAt)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      ) : null}
 
                       <div>
                         <h3 className="text-sm font-bold text-slate-900">Ordered Items</h3>

@@ -1,4 +1,4 @@
-import type { Order, OrderStatus } from "@/src/lib/api/commerceClient";
+import type { Order, OrderStatus, PaymentHistory } from "@/src/lib/api/commerceClient";
 
 export type ApiError = {
   message?: string;
@@ -12,6 +12,42 @@ export const normalizeOrderStatus = (status: unknown): OrderStatus => {
   if (statusText === "DELIVERED") return "DELIVERED";
   if (statusText === "CANCELLED") return "CANCELLED";
   return "PENDING";
+};
+
+const normalizePaymentHistories = (value: unknown): PaymentHistory[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((entry) => {
+      const row = entry as {
+        id?: string;
+        _id?: string;
+        transactionId?: string;
+        tran_id?: string;
+        amount?: number;
+        status?: string;
+        method?: string;
+        paymentMethod?: string;
+        gateway?: string;
+        paymentGateway?: string;
+        createdAt?: string;
+        paidAt?: string;
+      };
+
+      return {
+        id: row.id || row._id,
+        transactionId: row.transactionId || row.tran_id || null,
+        amount: typeof row.amount === "number" ? row.amount : undefined,
+        status: typeof row.status === "string" ? row.status : undefined,
+        method: row.method || row.paymentMethod,
+        gateway: row.gateway || row.paymentGateway,
+        createdAt: row.createdAt,
+        paidAt: row.paidAt || null,
+      };
+    })
+    .filter((item) => Boolean(item.id || item.transactionId || item.status));
 };
 
 export const normalizeOrders = (payload: unknown): Order[] => {
@@ -48,6 +84,7 @@ export const normalizeOrders = (payload: unknown): Order[] => {
         paymentStatus?: string;
         paymentGateway?: string | null;
         transactionId?: string | null;
+        tran_id?: string | null;
         paidAt?: string | null;
         shippingAddress?: string;
         phone?: string;
@@ -59,6 +96,7 @@ export const normalizeOrders = (payload: unknown): Order[] => {
           code?: string;
           discountPercentage?: number;
         } | null;
+        paymentHistories?: unknown[];
         items?: unknown[];
       };
 
@@ -66,6 +104,9 @@ export const normalizeOrders = (payload: unknown): Order[] => {
       if (!orderId) {
         return null;
       }
+
+      const paymentHistories = normalizePaymentHistories(row.paymentHistories);
+      const latestPayment = paymentHistories[0];
 
       const items = Array.isArray(row.items)
         ? row.items
@@ -135,17 +176,18 @@ export const normalizeOrders = (payload: unknown): Order[] => {
         promoCodeId: row.promoCodeId,
         appliedPromoCode: row.appliedPromoCode,
         totalAmount: typeof row.totalAmount === "number" ? row.totalAmount : 0,
-        paymentMethod: row.paymentMethod,
-        paymentStatus: row.paymentStatus,
-        paymentGateway: row.paymentGateway,
-        transactionId: row.transactionId,
-        paidAt: row.paidAt,
+        paymentMethod: row.paymentMethod || latestPayment?.method,
+        paymentStatus: row.paymentStatus || latestPayment?.status,
+        paymentGateway: row.paymentGateway || latestPayment?.gateway || null,
+        transactionId: row.transactionId || row.tran_id || latestPayment?.transactionId || null,
+        paidAt: row.paidAt || latestPayment?.paidAt || null,
         shippingAddress: row.shippingAddress,
         phone: row.phone,
         note: row.note,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
         promoCode: row.promoCode,
+        paymentHistories,
         items,
       };
     })

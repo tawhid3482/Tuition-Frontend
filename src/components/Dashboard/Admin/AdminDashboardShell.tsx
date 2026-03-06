@@ -2,58 +2,41 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
-  CreditCard,
+  Bell,
   Home,
   LayoutDashboard,
-  LockKeyhole,
   LogOut,
+  Mail,
   Menu,
   Package,
-  UserRound,
+  Settings,
+  Tag,
+  Users,
+  Wrench,
   X,
 } from "lucide-react";
 import useAuth from "@/src/hooks/useAuth";
 import { useLogOutMutation } from "@/src/redux/features/auth/authApi";
 import { getDashboardPathByRole, normalizeUserRole } from "@/src/lib/auth/dashboardRole";
+import { DashboardScope, getScopeBasePath, getScopeLabel } from "./utils";
 
-const navItems = [
-  {
-    href: "/dashboard/user",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    exact: true,
-  },
-  {
-    href: "/dashboard/user/orders",
-    label: "My Orders",
-    icon: Package,
-  },
-  {
-    href: "/dashboard/user/payments",
-    label: "Payment History",
-    icon: CreditCard,
-  },
-  {
-    href: "/dashboard/user/profile",
-    label: "Update Profile",
-    icon: UserRound,
-  },
-  {
-    href: "/dashboard/user/change-password",
-    label: "Change Password",
-    icon: LockKeyhole,
-  },
-];
-
-type UserDashboardShellProps = {
+type AdminDashboardShellProps = {
+  scope: DashboardScope;
   title: string;
   description: string;
   children: ReactNode;
 };
 
-export default function UserDashboardShell({ title, description, children }: UserDashboardShellProps) {
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  exact?: boolean;
+};
+
+export default function AdminDashboardShell({ scope, title, description, children }: AdminDashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
@@ -61,6 +44,25 @@ export default function UserDashboardShell({ title, description, children }: Use
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const userRole = normalizeUserRole(user?.role);
+  const basePath = getScopeBasePath(scope);
+
+  const navItems = useMemo<NavItem[]>(() => {
+    const core: NavItem[] = [
+      { href: basePath, label: "Overview", icon: LayoutDashboard, exact: true },
+      { href: `${basePath}/orders`, label: "Orders", icon: Package },
+      { href: `${basePath}/users`, label: "Users", icon: Users },
+      { href: `${basePath}/contacts`, label: "Contacts", icon: Mail },
+      { href: `${basePath}/notifications`, label: "Notifications", icon: Bell },
+      { href: `${basePath}/promo-codes`, label: "Promo Codes", icon: Tag },
+      { href: `${basePath}/catalog`, label: "Catalog Tools", icon: Wrench },
+    ];
+
+    if (scope === "SUPER_ADMIN") {
+      core.push({ href: `${basePath}/web-settings`, label: "Web Settings", icon: Settings });
+    }
+
+    return core;
+  }, [basePath, scope]);
 
   useEffect(() => {
     if (!user?.role) {
@@ -72,10 +74,10 @@ export default function UserDashboardShell({ title, description, children }: Use
       return;
     }
 
-    if (userRole !== "USER") {
+    if (userRole !== scope) {
       router.replace(getDashboardPathByRole(userRole));
     }
-  }, [router, user?.role, userRole]);
+  }, [router, scope, user?.role, userRole]);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -90,7 +92,7 @@ export default function UserDashboardShell({ title, description, children }: Use
     }
   };
 
-  if (!userRole || userRole !== "USER") {
+  if (!userRole || userRole !== scope) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600">
         Checking dashboard access...
@@ -100,18 +102,18 @@ export default function UserDashboardShell({ title, description, children }: Use
 
   return (
     <div className="space-y-5">
-      <header className="relative overflow-hidden rounded-3xl border border-primary/15 bg-linear-to-br from-primary/10 via-white to-primary/5 p-6 shadow-sm md:p-8">
+      <header className="relative overflow-hidden rounded-3xl border border-primary/15 bg-linear-to-br from-primary/12 via-white to-primary/5 p-6 shadow-sm md:p-8">
         <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-28 left-12 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
             <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-              User Dashboard
+              {getScopeLabel(scope)} Dashboard
             </span>
             <h1 className="mt-3 text-3xl font-bold text-slate-900">{title}</h1>
             <p className="mt-2 max-w-2xl text-slate-600">{description}</p>
-            <p className="mt-3 text-sm font-medium text-slate-700">Signed in as: {user?.name || user?.email || "User"}</p>
+            <p className="mt-3 text-sm font-medium text-slate-700">Signed in as: {user?.name || user?.email || getScopeLabel(scope)}</p>
           </div>
 
           <div className="flex w-full flex-wrap gap-2 sm:w-auto">
@@ -173,12 +175,12 @@ export default function UserDashboardShell({ title, description, children }: Use
         ) : null}
       </section>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[280px_1fr]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[290px_1fr]">
         <aside className="hidden h-fit rounded-3xl border border-primary/15 bg-white p-3 shadow-sm lg:block lg:sticky lg:top-24">
           <div className="mb-2 rounded-2xl bg-primary/8 p-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Welcome Back</p>
-            <p className="mt-1 text-sm font-bold text-slate-900">{user?.name || "User"}</p>
-            <p className="text-xs text-slate-600">Manage orders and payments quickly.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Control Center</p>
+            <p className="mt-1 text-sm font-bold text-slate-900">{getScopeLabel(scope)} Access</p>
+            <p className="text-xs text-slate-600">Manage users, orders, and platform operations.</p>
           </div>
 
           <nav className="space-y-1">
