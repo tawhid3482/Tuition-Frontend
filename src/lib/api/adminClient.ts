@@ -62,6 +62,7 @@ export type PromoCodeUpdatePayload = Partial<PromoCodePayload>;
 export type CategoryUpdatePayload = {
   name?: string;
   image?: string;
+  status?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
 };
 
 export type ProductUpdatePayload = {
@@ -71,6 +72,33 @@ export type ProductUpdatePayload = {
   stock?: number;
   images?: string[];
   categoryId?: string;
+  status?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
+};
+
+export type CategoryCreatePayload = {
+  name: string;
+  image?: string;
+  status?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
+};
+
+export type ProductCreatePayload = {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  images: string[];
+  categoryId: string;
+  status?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
+};
+
+export type ContactPriority = "Urgent" | "Normal";
+export type ContactStatus = "Pending" | "Resolved" | "Closed";
+
+export type ContactUpdatePayload = {
+  title?: string;
+  message?: string;
+  priority?: ContactPriority;
+  status?: ContactStatus;
 };
 
 export type AdminRevenuePoint = {
@@ -104,6 +132,13 @@ export const getAdminOrderStats = async () => {
 
 export const getContactsAdmin = async () => {
   const response = await instance.get("/contact", { headers: getAuthHeaders() });
+  return unwrapResponse<unknown>(response);
+};
+
+export const updateContactAdmin = async (contactId: string, payload: ContactUpdatePayload) => {
+  const response = await instance.patch(`/contact/${contactId}`, payload, {
+    headers: getAuthHeaders(),
+  });
   return unwrapResponse<unknown>(response);
 };
 
@@ -152,6 +187,13 @@ export const updateCategoryAdmin = async (categoryId: string, payload: CategoryU
   return unwrapResponse<unknown>(response);
 };
 
+export const createCategoryAdmin = async (payload: CategoryCreatePayload) => {
+  const response = await instance.post("/categories/create", payload, {
+    headers: getAuthHeaders(),
+  });
+  return unwrapResponse<unknown>(response);
+};
+
 export const deleteCategoryAdmin = async (categoryId: string) => {
   const response = await instance.delete(`/categories/delete/${categoryId}`, {
     headers: getAuthHeaders(),
@@ -161,6 +203,13 @@ export const deleteCategoryAdmin = async (categoryId: string) => {
 
 export const updateProductAdmin = async (productId: string, payload: ProductUpdatePayload) => {
   const response = await instance.patch(`/products/update/${productId}`, payload, {
+    headers: getAuthHeaders(),
+  });
+  return unwrapResponse<unknown>(response);
+};
+
+export const createProductAdmin = async (payload: ProductCreatePayload) => {
+  const response = await instance.post("/products/create", payload, {
     headers: getAuthHeaders(),
   });
   return unwrapResponse<unknown>(response);

@@ -36,6 +36,7 @@ export type ProductQueryParams = {
   page?: number;
   limit?: number;
   searchTerm?: string;
+  status?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
   categoryName?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -273,6 +274,10 @@ const buildProductQueryString = (params?: ProductQueryParams) => {
 
   if (typeof params.searchTerm === "string" && params.searchTerm.trim().length > 0) {
     query.set("searchTerm", params.searchTerm.trim());
+  }
+
+  if (typeof params.status === "string" && params.status.trim().length > 0) {
+    query.set("status", params.status.trim());
   }
 
   if (typeof params.categoryName === "string" && params.categoryName.trim().length > 0) {

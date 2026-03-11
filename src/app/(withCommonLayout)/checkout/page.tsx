@@ -385,6 +385,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (checkoutForm.paymentMethod === "SSLCOMMERZ") {
+      toast.error("SSLCOMMERZ will be available soon. Please use Cash on Delivery for now.");
+      return;
+    }
+
     const shippingAddress = checkoutForm.areaAddress.trim()
       ? `${checkoutForm.areaAddress.trim()}, ${checkoutForm.district}, Bangladesh`
       : `${checkoutForm.district}, Bangladesh`;
@@ -652,7 +657,7 @@ export default function CheckoutPage() {
                       </span>
                       <div>
                         <p className="text-sm font-semibold text-slate-900">SSLCOMMERZ</p>
-                        <p className="mt-0.5 text-xs text-slate-600">Pay online securely</p>
+                        <p className="mt-0.5 text-xs text-amber-700">Coming soon. Online payment is not available yet.</p>
                       </div>
                     </div>
                   </button>
@@ -724,13 +729,13 @@ export default function CheckoutPage() {
               {placingOrder
                 ? "Placing order..."
                 : checkoutForm.paymentMethod === "SSLCOMMERZ"
-                  ? "Pay with SSLCOMMERZ"
+                  ? "SSLCOMMERZ Coming Soon"
                   : "Place order (Cash on Delivery)"}
             </button>
 
             {checkoutForm.paymentMethod === "SSLCOMMERZ" ? (
-              <p className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-2 text-xs text-blue-700">
-                You will be redirected to SSLCOMMERZ after order creation.
+              <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700">
+                SSLCOMMERZ is not ready yet. If you continue with this option, you will see a coming soon message.
               </p>
             ) : null}
 

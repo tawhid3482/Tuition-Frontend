@@ -5,16 +5,17 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
   Bell,
+  FolderTree,
   Home,
   LayoutDashboard,
   LogOut,
   Mail,
   Menu,
   Package,
+  SquarePlus,
   Settings,
   Tag,
   Users,
-  Wrench,
   X,
 } from "lucide-react";
 import useAuth from "@/src/hooks/useAuth";
@@ -50,11 +51,13 @@ export default function AdminDashboardShell({ scope, title, description, childre
     const core: NavItem[] = [
       { href: basePath, label: "Overview", icon: LayoutDashboard, exact: true },
       { href: `${basePath}/orders`, label: "Orders", icon: Package },
+      { href: `${basePath}/products`, label: "Manage Products", icon: Package, exact: true },
+      { href: `${basePath}/products/add`, label: "Add Product", icon: SquarePlus, exact: true },
+      { href: `${basePath}/categories`, label: "Categories", icon: FolderTree },
       { href: `${basePath}/users`, label: "Users", icon: Users },
       { href: `${basePath}/contacts`, label: "Contacts", icon: Mail },
       { href: `${basePath}/notifications`, label: "Notifications", icon: Bell },
       { href: `${basePath}/promo-codes`, label: "Promo Codes", icon: Tag },
-      { href: `${basePath}/catalog`, label: "Catalog Tools", icon: Wrench },
     ];
 
     if (scope === "SUPER_ADMIN") {

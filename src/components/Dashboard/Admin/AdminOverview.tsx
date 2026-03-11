@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { DollarSign, Package, Settings, Users } from "lucide-react";
+import { DollarSign, FolderTree, Package, Settings, Users } from "lucide-react";
 import { formatPriceBDT } from "@/src/lib/formatCurrency";
 import {
   getAdminOrderStats,
@@ -442,7 +442,7 @@ export default function AdminOverview({ scope }: AdminOverviewProps) {
         id: "products",
         label: "Total Products",
         value: String(toSafeNumber(overview?.totalProducts)),
-        href: `${basePath}/catalog`,
+        href: `${basePath}/products`,
         icon: Package,
       },
       {
@@ -503,6 +503,40 @@ export default function AdminOverview({ scope }: AdminOverviewProps) {
             </Link>
           );
         })}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Link
+          href={`${basePath}/products`}
+          className="rounded-2xl border border-primary/15 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-primary">Product Control</p>
+              <h3 className="mt-1 text-lg font-bold text-slate-900">Manage all products</h3>
+              <p className="mt-2 text-sm text-slate-600">Add products, update details, change status, or delete items.</p>
+            </div>
+            <span className="rounded-xl bg-primary p-3 text-white">
+              <Package className="h-5 w-5" />
+            </span>
+          </div>
+        </Link>
+
+        <Link
+          href={`${basePath}/categories`}
+          className="rounded-2xl border border-primary/15 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-primary">Category Control</p>
+              <h3 className="mt-1 text-lg font-bold text-slate-900">Manage all categories</h3>
+              <p className="mt-2 text-sm text-slate-600">Create categories, update naming, and control active or inactive state.</p>
+            </div>
+            <span className="rounded-xl bg-primary p-3 text-white">
+              <FolderTree className="h-5 w-5" />
+            </span>
+          </div>
+        </Link>
       </div>
 
       <PieDistributionChart segments={pieSegments} />
