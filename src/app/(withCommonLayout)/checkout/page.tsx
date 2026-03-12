@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -425,37 +426,6 @@ export default function CheckoutPage() {
 
       if (nextPricing.appliedPromoCode) {
         toast.success(`Promo applied: ${nextPricing.appliedPromoCode} (-${nextPricing.discountPercentage || 0}%)`);
-      }
-
-      if (checkoutForm.paymentMethod === "SSLCOMMERZ") {
-        const orderId = result.order?.id || result.orderId || result.id;
-        const directPaymentUrl = resolvePaymentUrl(result);
-
-        if (directPaymentUrl) {
-          if (orderId) {
-            localStorage.setItem(PENDING_SSL_ORDER_KEY, orderId);
-          }
-
-          window.location.assign(directPaymentUrl);
-          return;
-        }
-
-        if (!orderId) {
-          toast.error("Order created but payment init failed. Missing order id.");
-          return;
-        }
-
-        const paymentInitResponse = await initSslPayment(orderId);
-        const fallbackPaymentUrl = resolvePaymentUrl(paymentInitResponse);
-
-        if (!fallbackPaymentUrl) {
-          toast.error("Payment initialization failed. Please try again.");
-          return;
-        }
-
-        localStorage.setItem(PENDING_SSL_ORDER_KEY, orderId);
-        window.location.assign(fallbackPaymentUrl);
-        return;
       }
 
       toast.success("Order placed successfully");

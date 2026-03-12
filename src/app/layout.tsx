@@ -1,23 +1,11 @@
 ﻿import type { Metadata } from "next";
 import "./globals.css";
-import { Geist_Mono, Open_Sans } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Providers from "@/src/lib/Providers/Providers";
 import { getSettings } from "@/src/lib/api/getSettings";
 import AuthProvider from "../lib/Providers/AuthProvider";
 import FCMProvider from "../lib/Providers/FCMProvider";
 import { SITE_NAME, SITE_URL } from "@/src/config/site";
-
-const openSans = Open_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -75,7 +63,7 @@ export default async function RootLayout({
             "--btn-active": settings.btnActive,
           } as React.CSSProperties
         }
-        className={`${openSans.className} ${geistMono.variable} antialiased`}
+        className="antialiased"
       >
         <Providers>
           <AuthProvider>
