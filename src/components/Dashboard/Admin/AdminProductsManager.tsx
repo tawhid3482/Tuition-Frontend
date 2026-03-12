@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
@@ -596,18 +597,28 @@ export default function AdminProductsManager({ addProductHref }: AdminProductsMa
               ) : (
                 rows.map((row) => {
                   const rowStatus = normalizeStatus(row.status);
+                  const imageSrc = row.images?.find((image) => typeof image === "string" && image.trim().length > 0);
 
                   return (
                     <tr key={row.id} className="border-b border-slate-100 align-top text-slate-700">
                       <td className="pl-2 pr-2 py-3">
-                        <p
-                          className="inline-block max-w-[220px] truncate font-semibold text-slate-900 mr-5"
-                          title={row.name}
-                        >
-                          {row.name}
-                        </p>
-                    
-                      
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
+                            {imageSrc ? (
+                              <Image src={imageSrc} alt={row.name} fill className="object-cover" sizes="48px" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-slate-500">
+                                {(row.name || "?").slice(0, 1).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          <p
+                            className="inline-block max-w-[200px] truncate font-semibold text-slate-900"
+                            title={row.name}
+                          >
+                            {row.name}
+                          </p>
+                        </div>
                       </td>
                       <td className="px-2 py-3">
                         <p className="inline-block max-w-[150px] truncate mr-5" title={row.category?.name || row.categoryId}>
