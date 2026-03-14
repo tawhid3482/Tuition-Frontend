@@ -10,6 +10,7 @@ import {
   updateOrderStatus,
   type Order,
   type OrderStatus,
+  type PaymentHistory,
 } from "@/src/lib/api/commerceClient";
 import { getDashboardPathByRole, normalizeUserRole } from "@/src/lib/auth/dashboardRole";
 import { formatPriceBDT } from "@/src/lib/formatCurrency";
@@ -83,13 +84,29 @@ const normalizeOrders = (payload: unknown): Order[] => {
         _id?: string;
         userId?: string;
         status?: string;
+        subtotal?: number;
         totalAmount?: number;
         deliveryFee?: number;
+        discountAmount?: number;
+        discountPercentage?: number;
+        promoCodeId?: string | null;
+        appliedPromoCode?: string | null;
+        paymentMethod?: string;
+        paymentStatus?: string;
+        paymentGateway?: string | null;
+        transactionId?: string | null;
+        paidAt?: string | null;
         shippingAddress?: string;
         phone?: string;
         note?: string;
         createdAt?: string;
         updatedAt?: string;
+        promoCode?: {
+          id?: string;
+          code?: string;
+          discountPercentage?: number;
+        } | null;
+        paymentHistories?: unknown[];
         items?: unknown[];
         user?: {
           id?: string;
@@ -113,10 +130,15 @@ const normalizeOrders = (payload: unknown): Order[] => {
                 productId?: string;
                 quantity?: number;
                 price?: number;
+                unitPrice?: number;
+                totalPrice?: number;
+                createdAt?: string;
                 product?: {
                   id?: string;
                   _id?: string;
                   name?: string;
+                  images?: string[];
+                  price?: number;
                 };
               };
 
@@ -129,11 +151,16 @@ const normalizeOrders = (payload: unknown): Order[] => {
                 id: parsed.id || parsed._id || `${orderId}-${productId}`,
                 productId,
                 quantity: typeof parsed.quantity === "number" ? parsed.quantity : 0,
+                unitPrice: typeof parsed.unitPrice === "number" ? parsed.unitPrice : undefined,
+                totalPrice: typeof parsed.totalPrice === "number" ? parsed.totalPrice : undefined,
                 price: typeof parsed.price === "number" ? parsed.price : 0,
+                createdAt: parsed.createdAt,
                 product: parsed.product
                   ? {
                       id: parsed.product.id || parsed.product._id || productId,
                       name: parsed.product.name || "Product",
+                      images: parsed.product.images,
+                      price: parsed.product.price,
                     }
                   : undefined,
               };
@@ -141,17 +168,33 @@ const normalizeOrders = (payload: unknown): Order[] => {
             .filter((orderItem) => Boolean(orderItem.productId))
         : [];
 
+      const paymentHistories = Array.isArray(row.paymentHistories)
+        ? row.paymentHistories.map((history) => history as PaymentHistory)
+        : undefined;
+
       return {
         id: orderId,
         userId: row.userId,
         status: normalizeOrderStatus(row.status),
         totalAmount: typeof row.totalAmount === "number" ? row.totalAmount : 0,
+        subtotal: typeof row.subtotal === "number" ? row.subtotal : undefined,
         deliveryFee: typeof row.deliveryFee === "number" ? row.deliveryFee : undefined,
+        discountAmount: typeof row.discountAmount === "number" ? row.discountAmount : undefined,
+        discountPercentage: typeof row.discountPercentage === "number" ? row.discountPercentage : undefined,
+        promoCodeId: row.promoCodeId ?? null,
+        appliedPromoCode: row.appliedPromoCode ?? null,
+        paymentMethod: row.paymentMethod,
+        paymentStatus: row.paymentStatus,
+        paymentGateway: row.paymentGateway ?? null,
+        transactionId: row.transactionId ?? null,
+        paidAt: row.paidAt ?? null,
         shippingAddress: row.shippingAddress,
         phone: row.phone,
         note: row.note,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
+        promoCode: row.promoCode ?? null,
+        paymentHistories,
         items,
         user: row.user
           ? {
@@ -178,7 +221,7 @@ export default function AdminOrdersManager({ title, description }: AdminOrdersMa
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
-  const [draftStatus, setDraftStatus] = useState<Record<string, OrderStatus>>({});
+  const [selectedOrder, setSelectedOrder] = useState<{ order: Order; number: number } | null>(null);
 
   const normalizedRole = normalizeUserRole(user?.role);
   const isAdminRole = normalizedRole === "ADMIN" || normalizedRole === "SUPER_ADMIN";
@@ -221,39 +264,58 @@ export default function AdminOrdersManager({ title, description }: AdminOrdersMa
     loadOrders();
   }, [isAdminRole]);
 
+  useEffect(() => {
+    if (!selectedOrder) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedOrder(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedOrder]);
+
   const totalRevenue = useMemo(
     () => orders.reduce((sum, order) => sum + order.totalAmount, 0),
     [orders],
   );
+  const modalOrder = selectedOrder?.order;
+  const modalOrderNumber = selectedOrder?.number;
 
-  const getNextStatus = (order: Order): OrderStatus => draftStatus[order.id] || order.status;
-
-  const handleStatusUpdate = async (order: Order) => {
-    const nextStatus = getNextStatus(order);
-
+  const handleStatusUpdate = async (order: Order, nextStatus: OrderStatus) => {
     if (nextStatus === order.status) {
       return;
     }
 
     setUpdatingOrderId(order.id);
+    setOrders((prev) =>
+      prev.map((row) =>
+        row.id === order.id
+          ? {
+              ...row,
+              status: nextStatus,
+            }
+          : row,
+      ),
+    );
 
     try {
       await updateOrderStatus(order.id, nextStatus);
+    } catch (err: unknown) {
       setOrders((prev) =>
         prev.map((row) =>
           row.id === order.id
             ? {
                 ...row,
-                status: nextStatus,
+                status: order.status,
               }
             : row,
         ),
       );
-      setDraftStatus((prev) => ({
-        ...prev,
-        [order.id]: nextStatus,
-      }));
-    } catch (err: unknown) {
       setError(getApiErrorMessage(err, "Failed to update order status"));
     } finally {
       setUpdatingOrderId(null);
@@ -296,38 +358,39 @@ export default function AdminOrdersManager({ title, description }: AdminOrdersMa
           No orders found.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <table className="w-full min-w-[980px] text-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <table className="w-full table-fixed text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-left text-slate-600">
-                <th className="px-4 py-3 font-semibold">Order</th>
+                <th className="w-[140px] px-4 py-3 font-semibold">Order</th>
                 <th className="px-4 py-3 font-semibold">Customer</th>
-                <th className="px-4 py-3 font-semibold">Amount</th>
-                <th className="px-4 py-3 font-semibold">Items</th>
-                <th className="px-4 py-3 font-semibold">Placed</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold">Update</th>
+                <th className="w-[140px] px-4 py-3 font-semibold">Amount</th>
+                <th className="w-[140px] px-4 py-3 font-semibold">Status</th>
+                <th className="w-[220px] px-4 py-3 font-semibold">Update</th>
+                <th className="w-[110px] px-4 py-3 font-semibold">Details</th>
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => {
+              {orders.map((order, index) => {
                 const immutable = order.status === "DELIVERED" || order.status === "CANCELLED";
-                const selectedStatus = getNextStatus(order);
                 const isUpdating = updatingOrderId === order.id;
+                const orderNumber = index + 1;
 
                 return (
-                  <tr key={order.id} className="border-b border-slate-100 align-top">
+                  <tr key={order.id} className="border-b border-slate-100 align-top transition hover:bg-slate-50">
                     <td className="px-4 py-3">
-                      <p className="font-semibold text-slate-900">{order.id}</p>
-                      <p className="mt-1 text-xs text-slate-500">{order.shippingAddress || "No address provided"}</p>
+                      <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        Order #{orderNumber}
+                      </div>
+                      <p className="mt-2 text-xs text-slate-500">Placed {formatDate(order.createdAt)}</p>
                     </td>
                     <td className="px-4 py-3 text-slate-700">
-                      <p>{order.user?.name || "Unknown"}</p>
-                      <p className="text-xs text-slate-500">{order.user?.email || "-"}</p>
+                      <p className="font-semibold text-slate-900">{order.user?.name || "Unknown"}</p>
+                      {/* <p className="text-xs text-slate-500">{order.user?.email || "-"}</p> */}
+                      {/* <p className="mt-1 text-xs text-slate-500 break-words">{order.shippingAddress || "-"}</p>+ */}
+                      <p className="mt-1 text-xs text-black">{order.phone || "-"}</p>
                     </td>
                     <td className="px-4 py-3 font-semibold text-slate-900">{formatPriceBDT(order.totalAmount)}</td>
-                    <td className="px-4 py-3 text-slate-700">{order.items.length}</td>
-                    <td className="px-4 py-3 text-slate-700">{formatDate(order.createdAt)}</td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClassMap[order.status]}`}>
                         {order.status}
@@ -336,13 +399,13 @@ export default function AdminOrdersManager({ title, description }: AdminOrdersMa
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <select
-                          value={selectedStatus}
+                          value={order.status}
                           disabled={immutable || isUpdating}
                           onChange={(e) => {
                             const next = normalizeOrderStatus(e.target.value);
-                            setDraftStatus((prev) => ({ ...prev, [order.id]: next }));
+                            handleStatusUpdate(order, next);
                           }}
-                          className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none disabled:bg-slate-100"
+                          className="rounded-lg border border-red-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none disabled:bg-slate-100"
                         >
                           {ORDER_STATUSES.map((status) => (
                             <option key={`${order.id}-${status}`} value={status}>
@@ -350,21 +413,22 @@ export default function AdminOrdersManager({ title, description }: AdminOrdersMa
                             </option>
                           ))}
                         </select>
-
-                        <button
-                          type="button"
-                          onClick={() => handleStatusUpdate(order)}
-                          disabled={immutable || isUpdating || selectedStatus === order.status}
-                          className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {isUpdating ? "Saving..." : "Save"}
-                        </button>
+                        <span className="text-xs text-slate-500">{isUpdating ? "Saving..." : null}</span>
                       </div>
                       {immutable ? (
                         <p className="mt-1 text-xs text-slate-500">
                           {order.status} order cannot be changed.
                         </p>
                       ) : null}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrder({ order, number: orderNumber })}
+                        className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                      >
+                        Details
+                      </button>
                     </td>
                   </tr>
                 );
@@ -373,10 +437,108 @@ export default function AdminOrdersManager({ title, description }: AdminOrdersMa
           </table>
         </div>
       )}
+
+      {modalOrder ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
+          <button
+            type="button"
+            onClick={() => setSelectedOrder(null)}
+            className="absolute inset-0 bg-slate-900/50"
+            aria-label="Close order details"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-10 w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-xl"
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Order Details</p>
+                <h2 className="mt-1 text-xl font-semibold text-slate-900">Order #{modalOrderNumber}</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedOrder(null)}
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="max-h-[70vh] space-y-6 overflow-y-auto px-6 py-5">
+              <div className="grid gap-4 lg:grid-cols-3">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase text-slate-500">Customer</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">{modalOrder.user?.name || "Unknown"}</p>
+                  <p className="text-xs text-slate-500">{modalOrder.user?.email || "-"}</p>
+                  <p className="mt-2 text-xs text-slate-500">{modalOrder.phone || "-"}</p>
+                  <p className="mt-2 text-xs text-slate-500">{modalOrder.shippingAddress || "-"}</p>
+                  <p className="mt-2 text-xs text-slate-500">Note: {modalOrder.note || "-"}</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase text-slate-500">Payment</p>
+                  <p className="mt-2 text-sm text-slate-700">Method: {modalOrder.paymentMethod || "-"}</p>
+                  <p className="mt-1 text-sm text-slate-700">Status: {modalOrder.paymentStatus || "-"}</p>
+                  <p className="mt-1 text-sm text-slate-700">Gateway: {modalOrder.paymentGateway || "-"}</p>
+                  <p className="mt-1 text-sm text-slate-700">Transaction: {modalOrder.transactionId || "-"}</p>
+                  <p className="mt-1 text-sm text-slate-700">Paid at: {formatDate(modalOrder.paidAt || "")}</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase text-slate-500">Pricing</p>
+                  <p className="mt-2 text-sm text-slate-700">Subtotal: {formatPriceBDT(modalOrder.subtotal ?? 0)}</p>
+                  <p className="mt-1 text-sm text-slate-700">
+                    Delivery: {formatPriceBDT(modalOrder.deliveryFee ?? 0)}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-700">
+                    Discount: {formatPriceBDT(modalOrder.discountAmount ?? 0)}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-700">
+                    Promo: {modalOrder.appliedPromoCode || modalOrder.promoCode?.code || "-"}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                    Total: {formatPriceBDT(modalOrder.totalAmount)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase text-slate-500">Items</p>
+                  <p className="text-xs text-slate-500">Total items: {modalOrder.items.length}</p>
+                </div>
+                {modalOrder.items.length === 0 ? (
+                  <p className="mt-3 text-sm text-slate-500">No items found.</p>
+                ) : (
+                  <div className="mt-3 space-y-3">
+                    {modalOrder.items.map((item) => {
+                      const unitPrice =
+                        item.unitPrice ??
+                        item.price ??
+                        (item.totalPrice && item.quantity ? item.totalPrice / item.quantity : 0);
+                      const totalPrice =
+                        item.totalPrice ?? (unitPrice && item.quantity ? unitPrice * item.quantity : 0);
+
+                      return (
+                        <div key={item.id} className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-[200px]">
+                            <p className="text-sm font-semibold text-slate-900">{item.product?.name || "Product"}</p>
+                            <p className="text-xs text-slate-500">Product ID: {item.productId}</p>
+                            <p className="text-xs text-slate-500">Qty: {item.quantity}</p>
+                          </div>
+                          <div className="text-right text-sm text-slate-700">
+                            <p>Unit: {formatPriceBDT(unitPrice || 0)}</p>
+                            <p>Total: {formatPriceBDT(totalPrice || 0)}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
-
-
-
-
